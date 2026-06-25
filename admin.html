@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script src="/js/admin.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <!-- Loading screen — tampil selama guard check berlangsung -->
+  <div id="admin-loading-screen" style="position:fixed;inset:0;background:var(--beige);display:flex;align-items:center;justify-content:center;z-index:9999;">
+    <p style="font-family:var(--font-display);font-size:16px;letter-spacing:4px;text-transform:uppercase;color:var(--charcoal);opacity:0.6;">Verifying access...</p>
+  </div>
+
+  <!-- Admin shell — tersembunyi sampai adminReady = true -->
+  <div x-data="adminApp()" x-init="init()" x-show="adminReady" style="display:none;">
+    <div class="admin-shell">
+
+      <!-- SIDEBAR -->
+      <aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+        <a href="/index.html" class="admin-sidebar-logo">ELVORA</a>
+        <nav>
+          <button @click="setSection('products')" :class="activeSection === 'products' ? 'admin-nav-item admin-nav-active' : 'admin-nav-item'">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="7" height="7" rx="1"/><rect x="15" y="3" width="7" height="7" rx="1"/><rect x="2" y="14" width="7" height="7" rx="1"/><rect x="15" y="14" width="7" height="7" rx="1"/></svg>
+            Products
+          </button>
+          <button @click="setSection('orders')" :class="activeSection === 'orders' ? 'admin-nav-item admin-nav-active' : 'admin-nav-item'">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke-linecap="round"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+            Orders
+          </button>
+          <button @click="setSection('content')" :class="activeSection === 'content' ? 'admin-nav-item admin-nav-active' : 'admin-nav-item'">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-linecap="round"/></svg>
+            Content
+          </button>
+          <button @click="setSection('testimonials')" :class="activeSection === 'testimonials' ? 'admin-nav-item admin-nav-active' : 'admin-nav-item'">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round"/></svg>
+            Testimonials
+          </button>
+        </nav>
+        <div style="margin-top:auto;padding:24px;">
+          <button @click="doSignOut()" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--rose);cursor:pointer;background:none;border:none;font-family:var(--font-body);padding:0;">Sign Out</button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <main class="admin-main">
+
+        <!-- PRODUCTS SECTION — plan 07-03 & 07-04 akan mengisi ini -->
+        <section x-show="activeSection === 'products'" style="display:none;">
+          <div class="admin-section-header">
+            <div>
+              <h1 class="admin-page-title">Products</h1>
+              <p class="admin-page-subtitle">Manage your product catalog</p>
+            </div>
+            <button @click="openProductForm(null)" class="admin-btn-sm admin-btn-primary">+ Add Product</button>
+          </div>
+          <div class="admin-empty-state" x-show="!productsLoading && products.length === 0">No products found.</div>
+          <div class="admin-loading" x-show="productsLoading">Loading products...</div>
+          <div class="admin-table-wrap" x-show="!productsLoading && products.length > 0">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="p in products" :key="p.id">
+                  <tr>
+                    <td x-text="p.name"></td>
+                    <td x-text="'Rp ' + Number(p.base_price || p.price).toLocaleString('id-ID')"></td>
+                    <td>
+                      <span :class="p.is_active ? 'admin-badge admin-badge-active' : 'admin-badge admin-badge-inactive'" x-text="p.is_active ? 'Active' : 'Inactive'"></span>
+                    </td>
+                    <td style="display:flex;gap:8px;">
+                      <button @click="openProductForm(p)" class="admin-btn-sm admin-btn-secondary">Edit</button>
+                      <button @click="deleteProduct(p.id, p.name)" class="admin-btn-sm admin-btn-danger">Delete</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <!-- Product form modal — diisi oleh plan 07-04 -->
+          <div x-show="showProductForm" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(46,46,46,0.5);overflow-y:auto;padding:40px 20px;">
+            <div class="admin-form-card" style="max-width:700px;margin:0 auto;" id="product-form-panel">
+              <p class="admin-form-title" x-text="editingProduct ? 'Edit Product' : 'Add Product'"></p>
+
+              <!-- Basic Info -->
+              <div class="admin-form-row">
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Product Name *</label>
+                  <input x-model="productForm.name" @input="productForm.slug = toSlug(productForm.name)" type="text" class="admin-form-input" placeholder="e.g. Sage Flow Leggings">
+                </div>
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Slug (auto)</label>
+                  <input x-model="productForm.slug" type="text" class="admin-form-input" placeholder="auto-generated">
+                </div>
+              </div>
+
+              <div class="admin-form-group">
+                <label class="admin-form-label">Description *</label>
+                <textarea x-model="productForm.description" class="admin-form-textarea" placeholder="Describe the product..."></textarea>
+              </div>
+
+              <div class="admin-form-row">
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Category *</label>
+                  <select x-model="productForm.activity" @change="productForm.subcollection = ''; aiSuggested = false;" class="admin-form-select">
+                    <option value="">Select category...</option>
+                    <option value="padel">Padel</option>
+                    <option value="pilates">Pilates</option>
+                    <option value="tennis">Tennis</option>
+                    <option value="training">Training / Gym</option>
+                    <option value="running">Running</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Base Price (Rp) *</label>
+                  <input x-model.number="productForm.base_price" type="number" class="admin-form-input" placeholder="e.g. 450000" min="0">
+                </div>
+              </div>
+
+              <!-- Style Collection — determines shop sub-filter -->
+              <div class="admin-form-row">
+                <div class="admin-form-group">
+                  <label class="admin-form-label" style="display:flex;align-items:center;gap:8px;">
+                    <span>Style Collection</span>
+                    <span x-show="aiAnalyzing" style="font-size:10px;color:var(--text-muted);font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:1px;">⟳ AI menganalisis...</span>
+                    <span x-show="aiSuggested && !aiAnalyzing" style="font-size:10px;color:#7a9e7e;font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:1px;">✦ Saran AI</span>
+                  </label>
+                  <select x-model="productForm.subcollection" @change="aiSuggested = false" class="admin-form-select" :disabled="!productForm.activity">
+                    <option value="">Select style...</option>
+                    <template x-for="sub in getSubcollections(productForm.activity)" :key="sub.slug">
+                      <option :value="sub.slug" x-text="sub.label"></option>
+                    </template>
+                  </select>
+                  <p x-show="!productForm.activity" style="font-size:11px;color:var(--text-muted);margin-top:4px;">Pilih activity terlebih dahulu</p>
+                </div>
+              </div>
+
+              <div class="admin-form-row">
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Fabric Details</label>
+                  <input x-model="productForm.fabric_details" type="text" class="admin-form-input" placeholder="e.g. 80% Nylon, 20% Elastane">
+                </div>
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Care Instructions</label>
+                  <input x-model="productForm.care_instructions" type="text" class="admin-form-input" placeholder="e.g. Machine wash cold">
+                </div>
+              </div>
+
+              <div class="admin-toggle-wrap" style="margin-bottom:20px;">
+                <label class="admin-toggle">
+                  <input type="checkbox" x-model="productForm.is_active">
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span style="font-size:13px;color:var(--charcoal);">Active (visible on storefront)</span>
+              </div>
+
+              <!-- Variants Section -->
+              <div style="margin-bottom:24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                  <p class="admin-form-label" style="margin:0;">Variants</p>
+                  <button @click="addVariantRow()" type="button" class="admin-btn-sm admin-btn-secondary">+ Add Variant</button>
+                </div>
+                <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:grid;grid-template-columns:1fr 1fr 80px 80px auto;gap:12px;margin-bottom:8px;">
+                  <span>Colour</span><span>Size</span><span>Hex</span><span>Stock</span><span></span>
+                </div>
+                <template x-for="(v, i) in productForm.variants" :key="i">
+                  <div class="admin-variant-row">
+                    <input x-model="productForm.variants[i].colour" type="text" class="admin-form-input" placeholder="e.g. Sage" style="padding:8px 12px;">
+                    <select x-model="productForm.variants[i].size" class="admin-form-select" style="padding:8px 12px;">
+                      <option value="">Size</option>
+                      <option value="XS">XS</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="XXL">XXL</option>
+                      <option value="One Size">One Size</option>
+                    </select>
+                    <input x-model="productForm.variants[i].colour_hex" type="text" class="admin-form-input" placeholder="#A8BFA3" style="padding:8px 12px;">
+                    <input x-model.number="productForm.variants[i].stock_quantity" type="number" class="admin-form-input" placeholder="10" min="0" style="padding:8px 12px;">
+                    <button @click="removeVariantRow(i)" type="button" class="admin-btn-sm admin-btn-danger" style="padding:7px 10px;">&#x2715;</button>
+                  </div>
+                </template>
+                <p x-show="productForm.variants.length === 0" style="font-size:13px;color:var(--text-muted);margin-top:8px;">No variants added yet. At least one variant required.</p>
+              </div>
+
+              <!-- Image Upload -->
+              <div class="admin-form-group">
+                <label class="admin-form-label">Product Images</label>
+
+                <!-- Existing images (when editing) -->
+                <div x-show="productForm.existingImages.length > 0" class="admin-image-preview" style="margin-bottom:12px;">
+                  <template x-for="(img, i) in productForm.existingImages" :key="img.id">
+                    <div style="position:relative;">
+                      <img :src="img.url" :alt="img.alt_text" class="admin-image-thumb">
+                      <button @click="removeExistingImage(img.id, i)" type="button" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#c0392b;color:white;border-radius:50%;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0;" title="Remove image">&#x2715;</button>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- New image file input -->
+                <label style="display:block;cursor:pointer;">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    @change="previewImages($event)"
+                    class="admin-form-input"
+                    style="cursor:pointer;"
+                  >
+                </label>
+                <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Max 5MB per file. JPEG, PNG, WebP only.</p>
+                <div x-show="productForm.imagePreviews.length > 0" class="admin-image-preview" style="margin-top:12px;">
+                  <template x-for="(src, i) in productForm.imagePreviews" :key="i">
+                    <img :src="src" alt="Preview" class="admin-image-thumb">
+                  </template>
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="admin-form-actions">
+                <button @click="showProductForm = false; resetProductForm()" type="button" class="admin-btn-sm admin-btn-secondary">Cancel</button>
+                <button @click="saveProduct()" type="button" class="admin-btn-sm admin-btn-primary" :disabled="productFormSaving">
+                  <span x-show="!productFormSaving" x-text="editingProduct ? 'Save Changes' : 'Create Product'"></span>
+                  <span x-show="productFormSaving">Saving...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ORDERS SECTION — plan 07-06 akan mengisi ini -->
+        <section x-show="activeSection === 'orders'" style="display:none;">
+          <div class="admin-section-header">
+            <div>
+              <h1 class="admin-page-title">Orders</h1>
+              <p class="admin-page-subtitle">View all customer orders</p>
+            </div>
+          </div>
+          <div class="admin-loading" x-show="ordersLoading">Loading orders...</div>
+          <div class="admin-empty-state" x-show="!ordersLoading && orders.length === 0">
+            <p style="margin-bottom:8px;">Belum ada orders.</p>
+            <p style="font-size:12px;color:var(--text-muted);">Jika sudah ada checkout, pastikan migration <code>007_admin_policies.sql</code> sudah diapply ke Supabase.</p>
+          </div>
+          <div class="admin-table-wrap" x-show="!ordersLoading && orders.length > 0">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order Ref</th>
+                  <th>Customer</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="o in orders" :key="o.id">
+                  <tr class="admin-order-row">
+                    <td><span style="font-family:monospace;font-size:12px;letter-spacing:1px;" x-text="o.id.substring(0,8).toUpperCase()"></span></td>
+                    <td x-text="o.guest_email || '—'"></td>
+                    <td x-text="'Rp ' + Number(o.subtotal).toLocaleString('id-ID')"></td>
+                    <td><span class="admin-badge admin-badge-active" x-text="o.status || 'pending'"></span></td>
+                    <td x-text="new Date(o.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})"></td>
+                    <td>
+                      <button @click="toggleOrderItems(o.id)" class="admin-btn-sm admin-btn-secondary">Details</button>
+                    </td>
+                  </tr>
+                  <tr x-show="selectedOrderId === o.id" style="display:none;">
+                    <td colspan="6">
+                      <div class="admin-order-items">
+                        <div x-show="loadingItems" style="font-size:13px;color:var(--text-muted);">Loading items...</div>
+                        <template x-for="item in orderItems" :key="item.id">
+                          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(168,191,163,0.1);">
+                            <span x-text="item.product_name"></span>
+                            <span x-text="item.variant_label" style="color:var(--text-muted);"></span>
+                            <span x-text="'x' + item.quantity"></span>
+                            <span x-text="'Rp ' + Number(item.unit_price).toLocaleString('id-ID')"></span>
+                          </div>
+                        </template>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- CONTENT SECTION -->
+        <section x-show="activeSection === 'content'" style="display:none;">
+          <div class="admin-section-header">
+            <div>
+              <h1 class="admin-page-title">Homepage Content</h1>
+              <p class="admin-page-subtitle">Manage best sellers and featured collections</p>
+            </div>
+          </div>
+          <div class="admin-loading" x-show="contentLoading">Loading content settings...</div>
+
+          <!-- Best Sellers Grid -->
+          <div x-show="!contentLoading">
+            <div class="admin-form-card">
+              <p class="admin-form-title">Best Sellers</p>
+              <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Toggle produk yang tampil di section Best Sellers homepage. Maksimal 4 produk ditampilkan.</p>
+
+              <div x-show="bestSellers.length === 0" class="admin-empty-state">Memuat produk...</div>
+
+              <div x-show="bestSellers.length > 0" style="display:flex;flex-direction:column;gap:12px;">
+                <template x-for="p in bestSellers" :key="p.id">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(168,191,163,0.1);">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                      <img
+                        :src="(p.product_images && p.product_images[0]) ? p.product_images[0].url + '?width=60' : ''"
+                        :alt="p.name"
+                        style="width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--sage-light);"
+                        x-show="p.product_images && p.product_images[0]"
+                      >
+                      <div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                          <p x-text="p.name" style="font-size:14px;font-weight:500;color:var(--charcoal);margin:0;"></p>
+                          <span
+                            x-text="p.is_active ? 'Active' : 'Inactive'"
+                            :style="p.is_active ? 'background:rgba(168,191,163,0.25);color:#2d6a4f;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;' : 'background:rgba(150,150,150,0.15);color:#888;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;'"
+                          ></span>
+                        </div>
+                        <p x-text="'Rp ' + Number(p.base_price).toLocaleString('id-ID')" style="font-size:12px;color:var(--text-muted);margin:2px 0 0;"></p>
+                      </div>
+                    </div>
+                    <label class="admin-toggle" style="display:inline-block;" :title="p.is_best_seller ? 'Remove from best sellers' : 'Add to best sellers'">
+                      <input type="checkbox" :checked="p.is_best_seller" @change="toggleBestSeller(p.id, $event.target.checked, p)">
+                      <span class="admin-toggle-slider"></span>
+                    </label>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TESTIMONIALS SECTION -->
+        <section x-show="activeSection === 'testimonials'" style="display:none;">
+          <div class="admin-section-header">
+            <div>
+              <h1 class="admin-page-title">Testimonials</h1>
+              <p class="admin-page-subtitle">Manage customer testimonials shown on homepage</p>
+            </div>
+            <button @click="openTestimonialForm(null)" class="admin-btn-sm admin-btn-primary">+ Add Testimonial</button>
+          </div>
+          <div class="admin-loading" x-show="testimonialsLoading">Loading testimonials...</div>
+
+          <!-- Testimonials list table -->
+          <div x-show="!testimonialsLoading && testimonials.length > 0" class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Author</th>
+                  <th>Activity</th>
+                  <th>Quote (preview)</th>
+                  <th>Visible</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="t in testimonials" :key="t.id">
+                  <tr>
+                    <td x-text="t.customer_name"></td>
+                    <td x-text="t.activity_label || '—'"></td>
+                    <td x-text="(t.quote || '').substring(0, 60) + ((t.quote || '').length > 60 ? '...' : '')"></td>
+                    <td>
+                      <label class="admin-toggle" style="display:inline-block;">
+                        <input type="checkbox" :checked="t.is_active" @change="toggleTestimonialVisibility(t.id, $event.target.checked)">
+                        <span class="admin-toggle-slider"></span>
+                      </label>
+                    </td>
+                    <td style="display:flex;gap:8px;">
+                      <button @click="openTestimonialForm(t)" class="admin-btn-sm admin-btn-secondary">Edit</button>
+                      <button @click="deleteTestimonial(t.id, t.customer_name)" class="admin-btn-sm admin-btn-danger">Delete</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="admin-empty-state" x-show="!testimonialsLoading && testimonials.length === 0">No testimonials yet.</div>
+
+          <!-- Testimonial form modal -->
+          <div x-show="showTestimonialForm" style="position:fixed;inset:0;z-index:500;background:rgba(46,46,46,0.5);display:flex;align-items:center;justify-content:center;padding:20px;">
+            <div class="admin-form-card" style="width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">
+              <p class="admin-form-title" x-text="editingTestimonial ? 'Edit Testimonial' : 'Add Testimonial'"></p>
+
+              <div class="admin-form-group">
+                <label class="admin-form-label">Author Name *</label>
+                <input x-model="testimonialForm.customer_name" type="text" class="admin-form-input" placeholder="e.g. Anisa R.">
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-form-label">Activity Label</label>
+                <input x-model="testimonialForm.activity_label" type="text" class="admin-form-input" placeholder="e.g. Padel Player">
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-form-label">Quote *</label>
+                <textarea x-model="testimonialForm.quote" class="admin-form-textarea" placeholder="Customer's testimonial text..."></textarea>
+              </div>
+              <div class="admin-form-row">
+                <div class="admin-form-group">
+                  <label class="admin-form-label">Display Order</label>
+                  <input x-model.number="testimonialForm.display_order" type="number" class="admin-form-input" placeholder="0" min="0">
+                </div>
+                <div class="admin-form-group" style="display:flex;align-items:center;gap:10px;padding-top:28px;">
+                  <label class="admin-toggle" style="display:inline-block;">
+                    <input type="checkbox" x-model="testimonialForm.is_active">
+                    <span class="admin-toggle-slider"></span>
+                  </label>
+                  <span style="font-size:13px;color:var(--charcoal);">Visible on homepage</span>
+                </div>
+              </div>
+
+              <div class="admin-form-actions">
+                <button @click="showTestimonialForm = false; resetTestimonialForm()" type="button" class="admin-btn-sm admin-btn-secondary">Cancel</button>
+                <button @click="saveTestimonial()" type="button" class="admin-btn-sm admin-btn-primary" :disabled="testimonialFormSaving">
+                  <span x-show="!testimonialFormSaving" x-text="editingTestimonial ? 'Save Changes' : 'Add Testimonial'"></span>
+                  <span x-show="testimonialFormSaving">Saving...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+  <!-- admin.js loaded in <head> before Alpine -->
+</body>
+</html>

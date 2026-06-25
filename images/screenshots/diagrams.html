@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Courier New', Courier, monospace; background: #fff; }
+
+.slide { width: 1280px; height: 720px; display: none; position: relative; background: #fff; overflow: hidden; }
+.slide.active { display: block; }
+
+.slide-title {
+  position: absolute; top: 0; left: 0; right: 0;
+  border-bottom: 2px solid #000;
+  padding: 8px 24px; display: flex; align-items: baseline; gap: 16px; background: #fff;
+}
+.slide-title h1 { font-size: 14px; font-weight: 700; font-family: 'Courier New', monospace; }
+.slide-title span { font-size: 10px; font-style: italic; color: #333; }
+
+.uml { position: absolute; border: 1.5px solid #000; background: #fff; font-family: 'Courier New', monospace; }
+.uml .stereo { border-bottom: 1px solid #000; padding: 2px 6px; font-size: 8.5px; font-style: italic; text-align: center; }
+.uml .head { border-bottom: 1px solid #000; padding: 4px 6px; font-size: 10px; font-weight: 700; text-align: center; background: #e8e8e8; }
+.uml .sec { border-bottom: 1px solid #ccc; padding: 4px 6px; }
+.uml .sec:last-child { border-bottom: none; }
+.uml .attr { font-size: 8.5px; padding: 1.5px 0; border-bottom: 1px dashed #ddd; line-height: 1.4; }
+.uml .attr:last-child { border-bottom: none; }
+
+.pkg { position: absolute; border: 1.5px dashed #000; background: transparent; }
+.pkg .pkg-lbl { position: absolute; top: -10px; left: 8px; background: #fff; padding: 0 4px; font-size: 8.5px; font-style: italic; font-family: 'Courier New', monospace; border: 1px solid #000; }
+
+.note { position: absolute; border: 1px solid #000; background: #f0f0f0; font-size: 8.5px; font-family: 'Courier New', monospace; padding: 6px 8px; line-height: 1.6; }
+
+.step { position: absolute; border: 1.5px solid #000; background: #fff; font-size: 8.5px; font-family: 'Courier New', monospace; padding: 5px 7px; line-height: 1.5; }
+.step.filled { background: #e8e8e8; }
+.step.dark { background: #333; color: #fff; }
+
+.start-node { position: absolute; border-radius: 50%; background: #000; width: 20px; height: 20px; }
+.end-node { position: absolute; border-radius: 50%; background: #000; width: 20px; height: 20px; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; }
+
+.legend { position: absolute; bottom: 8px; left: 24px; display: flex; gap: 16px; align-items: center; font-size: 8.5px; font-family: 'Courier New', monospace; }
+.l-item { display: flex; align-items: center; gap: 4px; }
+.l-solid { width: 18px; border-top: 1.5px solid #000; }
+.l-dashed { width: 18px; border-top: 1.5px dashed #000; }
+.l-box { width: 12px; height: 9px; border: 1.5px solid #000; }
+.l-box.gray { background: #e8e8e8; }
+
+svg.arr { position: absolute; top: 0; left: 0; pointer-events: none; width: 1280px; height: 720px; }
+</style>
+</head>
+<body>
+
+<!-- ══ S1 Arsitektur Sistem ══ -->
+<div class="slide active" id="s1">
+  <div class="slide-title"><h1>Arsitektur Sistem</h1><span>«component diagram» — ELVORA Platform</span></div>
+  <svg class="arr">
+    <line x1="230" y1="200" x2="308" y2="200" stroke="#000" stroke-width="1.5"/>
+    <polygon points="308,196 318,200 308,204" fill="#000"/>
+    <text x="234" y="194" font-size="8" font-family="Courier New">HTTPS</text>
+    <line x1="230" y1="370" x2="566" y2="370" stroke="#000" stroke-width="1.5"/>
+    <polygon points="566,366 576,370 566,374" fill="#000"/>
+    <text x="330" y="363" font-size="8" font-family="Courier New">REST / Realtime (anon key + RLS)</text>
+    <line x1="484" y1="305" x2="566" y2="305" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <polygon points="566,301 576,305 566,309" fill="#000"/>
+    <line x1="850" y1="460" x2="948" y2="460" stroke="#000" stroke-width="1.5"/>
+    <polygon points="948,456 958,460 948,464" fill="#000"/>
+    <text x="854" y="454" font-size="7.5" font-family="Courier New">GEMINI_API_KEY (server)</text>
+    <line x1="484" y1="340" x2="948" y2="490" stroke="#000" stroke-width="1.5"/>
+    <polygon points="944,490 958,490 950,483" fill="#000"/>
+    <text x="630" y="390" font-size="7.5" font-family="Courier New">ANTHROPIC_API_KEY (server)</text>
+  </svg>
+
+  <div class="pkg" style="left:24px;top:46px;width:242px;height:590px;"><div class="pkg-lbl">«client»</div></div>
+  <div class="uml" style="left:36px;top:66px;width:218px;">
+    <div class="stereo">«component»</div><div class="head">Browser / HTML Pages</div>
+    <div class="sec"><div class="attr">+ Alpine.js 3.x (reactive UI)</div><div class="attr">+ Vanilla JS ES Modules</div><div class="attr">+ Tailwind CSS v4 (CLI build)</div><div class="attr">+ 13 halaman HTML</div></div>
+    <div class="sec" style="font-size:8px;padding:4px 6px;color:#333;">index · shop · product · cart<br>checkout · auth · account<br>style-match · admin · about · …</div>
+  </div>
+  <div class="uml" style="left:36px;top:286px;width:218px;">
+    <div class="stereo">«module»</div><div class="head">JS ES Modules</div>
+    <div class="sec"><div class="attr">supabase.js · auth.js · cart.js</div><div class="attr">products.js · style-match.js</div><div class="attr">admin.js · components.js</div></div>
+  </div>
+  <div class="uml" style="left:36px;top:430px;width:218px;">
+    <div class="stereo">«store»</div><div class="head">Alpine.store()</div>
+    <div class="sec"><div class="attr">cart: { items, count, total, sync() }</div><div class="attr">auth: { user, isLoggedIn, isAdmin }</div></div>
+  </div>
+
+  <div class="pkg" style="left:310px;top:46px;width:220px;height:380px;"><div class="pkg-lbl">«deployment» Vercel</div></div>
+  <div class="uml" style="left:322px;top:66px;width:196px;">
+    <div class="stereo">«artifact»</div><div class="head">Static CDN</div>
+    <div class="sec"><div class="attr">/*.html — 13 halaman</div><div class="attr">/css/style.css — Tailwind minified</div><div class="attr">/js/__env.js — ENV injected</div></div>
+  </div>
+  <div class="uml" style="left:322px;top:236px;width:196px;">
+    <div class="stereo">«serverless»</div><div class="head">Vercel Functions</div>
+    <div class="sec"><div class="attr">POST /api/ai-advisor</div><div class="attr">POST /api/analyze-image</div><div class="attr">POST /api/delete-account</div></div>
+    <div class="sec" style="font-size:8px;padding:3px 6px;">runtime: Node.js 20</div>
+  </div>
+
+  <div class="pkg" style="left:568px;top:46px;width:356px;height:590px;"><div class="pkg-lbl">«backend» Supabase</div></div>
+  <div class="uml" style="left:580px;top:66px;width:154px;">
+    <div class="stereo">«service»</div><div class="head">Auth (GoTrue)</div>
+    <div class="sec"><div class="attr">email / password</div><div class="attr">JWT session management</div><div class="attr">app_metadata { role }</div></div>
+  </div>
+  <div class="uml" style="left:750px;top:66px;width:158px;">
+    <div class="stereo">«database»</div><div class="head">PostgreSQL 17</div>
+    <div class="sec"><div class="attr">17 tabel relasional</div><div class="attr">RLS aktif semua tabel</div><div class="attr">is_admin() function</div></div>
+  </div>
+  <div class="uml" style="left:580px;top:260px;width:154px;">
+    <div class="stereo">«storage»</div><div class="head">Storage (S3-like)</div>
+    <div class="sec"><div class="attr">product-images (public)</div><div class="attr">user-uploads (private)</div><div class="attr">signed URL TTL: 60s</div></div>
+  </div>
+  <div class="uml" style="left:750px;top:260px;width:158px;">
+    <div class="stereo">«edge-function»</div><div class="head">style-match (Deno)</div>
+    <div class="sec"><div class="attr">verify JWT</div><div class="attr">fetch photo via signed URL</div><div class="attr">call Gemini Vision API</div><div class="attr">save ai_style_sessions</div></div>
+  </div>
+
+  <div class="pkg" style="left:950px;top:46px;width:306px;height:590px;"><div class="pkg-lbl">«external» AI APIs</div></div>
+  <div class="uml" style="left:962px;top:66px;width:282px;">
+    <div class="stereo">«api»</div><div class="head">Gemini 1.5 Flash (Vision)</div>
+    <div class="sec"><div class="attr">multimodal: photo + text prompt</div><div class="attr">input: base64 inline_data</div><div class="attr">output: JSON structured</div></div>
+    <div class="sec" style="font-size:8px;padding:3px 6px;">via Supabase Edge Function<br>key: GEMINI_API_KEY (server)</div>
+  </div>
+  <div class="uml" style="left:962px;top:300px;width:282px;">
+    <div class="stereo">«api»</div><div class="head">Claude Haiku (Anthropic)</div>
+    <div class="sec"><div class="attr">text-only inference</div><div class="attr">AI Advisor + image analysis</div></div>
+    <div class="sec" style="font-size:8px;padding:3px 6px;">via Vercel Function<br>key: ANTHROPIC_API_KEY (server)</div>
+  </div>
+
+  <div class="legend">
+    <div class="l-item"><div class="l-box"></div> component</div>
+    <div class="l-item"><div class="l-box gray"></div> header/stereotype</div>
+    <div class="l-item"><div class="l-solid"></div> dependency</div>
+    <div class="l-item"><div class="l-dashed"></div> internal call</div>
+  </div>
+</div>
+
+
+<!-- ══ S2 ERD ══ -->
+<div class="slide" id="s2">
+  <div class="slide-title"><h1>Diagram Relasi Tabel</h1><span>«entity-relationship diagram» — 17 tabel PostgreSQL + RLS</span></div>
+  <svg class="arr">
+    <line x1="132" y1="136" x2="132" y2="176" stroke="#000" stroke-width="1.2"/>
+    <polygon points="128,176 132,186 136,176" fill="#000"/>
+    <text x="136" y="160" font-size="7.5" font-family="Courier New">1:1</text>
+    <line x1="132" y1="222" x2="132" y2="266" stroke="#000" stroke-width="1.2"/>
+    <polygon points="128,266 132,276 136,266" fill="#000"/>
+    <text x="136" y="248" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="200" y1="188" x2="350" y2="188" stroke="#000" stroke-width="1.2"/>
+    <line x1="350" y1="188" x2="350" y2="266" stroke="#000" stroke-width="1.2"/>
+    <polygon points="346,266 350,276 354,266" fill="#000"/>
+    <text x="255" y="182" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="200" y1="158" x2="534" y2="158" stroke="#000" stroke-width="1.2"/>
+    <line x1="534" y1="158" x2="534" y2="266" stroke="#000" stroke-width="1.2"/>
+    <polygon points="530,266 534,276 538,266" fill="#000"/>
+    <text x="340" y="152" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="200" y1="138" x2="720" y2="138" stroke="#000" stroke-width="1.2"/>
+    <line x1="720" y1="138" x2="720" y2="266" stroke="#000" stroke-width="1.2"/>
+    <polygon points="716,266 720,276 724,266" fill="#000"/>
+    <text x="430" y="132" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="200" y1="118" x2="908" y2="118" stroke="#000" stroke-width="1.2"/>
+    <line x1="908" y1="118" x2="908" y2="458" stroke="#000" stroke-width="1.2"/>
+    <polygon points="904,458 908,468 912,458" fill="#000"/>
+    <line x1="132" y1="362" x2="132" y2="458" stroke="#000" stroke-width="1.2"/>
+    <polygon points="128,458 132,468 136,458" fill="#000"/>
+    <text x="136" y="414" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="534" y1="440" x2="534" y2="458" stroke="#000" stroke-width="1.2"/>
+    <polygon points="530,458 534,468 538,458" fill="#000"/>
+    <text x="538" y="450" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="720" y1="440" x2="720" y2="458" stroke="#000" stroke-width="1.2"/>
+    <polygon points="716,458 720,468 724,458" fill="#000"/>
+    <text x="724" y="450" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="350" y1="362" x2="380" y2="362" stroke="#000" stroke-width="1.2"/>
+    <line x1="380" y1="362" x2="380" y2="392" stroke="#000" stroke-width="1.2"/>
+    <line x1="380" y1="392" x2="450" y2="392" stroke="#000" stroke-width="1.2"/>
+    <polygon points="450,388 460,392 450,396" fill="#000"/>
+    <text x="356" y="376" font-size="7.5" font-family="Courier New">1:N</text>
+    <line x1="200" y1="510" x2="450" y2="510" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="450,506 460,510 450,514" fill="#000"/>
+    <text x="270" y="504" font-size="7.5" font-family="Courier New">FK product_id</text>
+  </svg>
+
+  <div class="uml" style="left:24px;top:80px;width:176px;">
+    <div class="stereo">«entity» auth.users</div><div class="head">auth.users</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">email: text</div><div class="attr">app_metadata: jsonb</div><div class="attr">created_at: timestamptz</div></div>
+    <div class="sec" style="font-size:7.5px;padding:3px 6px;background:#f0f0f0;">Dikelola Supabase Auth</div>
+  </div>
+  <div class="uml" style="left:24px;top:186px;width:176px;">
+    <div class="stereo">«entity»</div><div class="head">user_profiles</div>
+    <div class="sec"><div class="attr">id: uuid [PK, FK→auth.users]</div><div class="attr">full_name: text</div><div class="attr">phone: text</div><div class="attr">avatar_url: text</div></div>
+  </div>
+  <div class="uml" style="left:24px;top:276px;width:176px;">
+    <div class="stereo">«entity»</div><div class="head">orders</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">user_id: uuid [FK]</div><div class="attr">status: text</div><div class="attr">total_amount: numeric</div><div class="attr">shipping_address: jsonb</div></div>
+  </div>
+  <div class="uml" style="left:24px;top:468px;width:176px;">
+    <div class="stereo">«entity»</div><div class="head">order_items</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">order_id: uuid [FK]</div><div class="attr">product_id: uuid [FK]</div><div class="attr">variant_id: uuid [FK]</div><div class="attr">quantity: int</div><div class="attr">price: numeric</div></div>
+  </div>
+  <div class="uml" style="left:248px;top:276px;width:154px;">
+    <div class="stereo">«entity»</div><div class="head">categories</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">name: text</div><div class="attr">slug: text</div><div class="attr">description: text</div></div>
+  </div>
+  <div class="uml" style="left:460px;top:276px;width:148px;">
+    <div class="stereo">«entity»</div><div class="head">products</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">category_id: uuid [FK]</div><div class="attr">name: text</div><div class="attr">slug: text</div><div class="attr">price: numeric</div><div class="attr">hero_image_url: text</div><div class="attr">aesthetic_tags: text[]</div></div>
+  </div>
+  <div class="uml" style="left:248px;top:468px;width:148px;">
+    <div class="stereo">«entity»</div><div class="head">cart_items</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">user_id: uuid [FK]</div><div class="attr">variant_id: uuid [FK]</div><div class="attr">quantity: int</div></div>
+  </div>
+  <div class="uml" style="left:460px;top:468px;width:148px;">
+    <div class="stereo">«entity»</div><div class="head">product_variants</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">product_id: uuid [FK]</div><div class="attr">size: text</div><div class="attr">color: text</div><div class="attr">stock: int</div><div class="attr">sku: text</div></div>
+  </div>
+  <div class="uml" style="left:644px;top:276px;width:188px;">
+    <div class="stereo">«entity»</div><div class="head">ai_style_sessions</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">user_id: uuid [FK]</div><div class="attr">photo_url: text</div><div class="attr">colour_guidance: text</div><div class="attr">recommendations: jsonb</div><div class="attr">created_at: timestamptz</div></div>
+  </div>
+  <div class="uml" style="left:644px;top:468px;width:148px;">
+    <div class="stereo">«entity»</div><div class="head">product_images</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">product_id: uuid [FK]</div><div class="attr">image_url: text</div><div class="attr">sort_order: int</div></div>
+  </div>
+  <div class="uml" style="left:850px;top:468px;width:148px;">
+    <div class="stereo">«entity»</div><div class="head">reviews</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">user_id: uuid [FK]</div><div class="attr">product_id: uuid [FK]</div><div class="attr">rating: int (1-5)</div><div class="attr">comment: text</div></div>
+  </div>
+  <div class="uml" style="left:460px;top:610px;width:148px;">
+    <div class="stereo">«entity»</div><div class="head">wishlist_items</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">user_id: uuid [FK]</div><div class="attr">product_id: uuid [FK]</div></div>
+  </div>
+  <div class="uml" style="left:1022px;top:276px;width:234px;">
+    <div class="stereo">«entity»</div><div class="head">contacts</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">name: text</div><div class="attr">email: text</div><div class="attr">message: text</div><div class="attr">created_at: timestamptz</div></div>
+    <div class="sec" style="font-size:7.5px;padding:3px 6px;background:#f0f0f0;">standalone — no FK</div>
+  </div>
+  <div class="uml" style="left:1022px;top:468px;width:234px;">
+    <div class="stereo">«entity»</div><div class="head">site_settings</div>
+    <div class="sec"><div class="attr">id: uuid [PK]</div><div class="attr">key: text [UNIQUE]</div><div class="attr">value: jsonb</div></div>
+    <div class="sec" style="font-size:7.5px;padding:3px 6px;background:#f0f0f0;">standalone — admin config</div>
+  </div>
+
+  <div class="legend">
+    <div class="l-item"><div class="l-solid"></div> FK relationship</div>
+    <div class="l-item"><div class="l-dashed"></div> logical reference</div>
+    <div class="l-item">1:N = one-to-many &nbsp; 1:1 = one-to-one &nbsp; RLS aktif semua tabel</div>
+  </div>
+</div>
+
+
+<!-- ══ S3 Alur End-to-End ══ -->
+<div class="slide" id="s3">
+  <div class="slide-title"><h1>Alur Sistem End-to-End — AI Style Match</h1><span>«activity diagram» — swimlane per layer</span></div>
+  <svg class="arr">
+    <line x1="298" y1="42" x2="298" y2="712" stroke="#000" stroke-width="1.5"/>
+    <line x1="596" y1="42" x2="596" y2="712" stroke="#000" stroke-width="1.5"/>
+    <line x1="894" y1="42" x2="894" y2="712" stroke="#000" stroke-width="1.5"/>
+    <!-- Lane 1 flow -->
+    <line x1="149" y1="108" x2="149" y2="128" stroke="#000" stroke-width="1.2"/><polygon points="145,128 149,138 153,128" fill="#000"/>
+    <line x1="149" y1="195" x2="149" y2="215" stroke="#000" stroke-width="1.2"/><polygon points="145,215 149,225 153,215" fill="#000"/>
+    <line x1="149" y1="295" x2="149" y2="315" stroke="#000" stroke-width="1.2"/><polygon points="145,315 149,325 153,315" fill="#000"/>
+    <!-- Step4 → Lane2 -->
+    <line x1="149" y1="385" x2="149" y2="410" stroke="#000" stroke-width="1.2"/>
+    <line x1="149" y1="410" x2="298" y2="410" stroke="#000" stroke-width="1.2"/>
+    <line x1="298" y1="410" x2="298" y2="108" stroke="#000" stroke-width="1.2"/>
+    <line x1="298" y1="108" x2="447" y2="108" stroke="#000" stroke-width="1.2"/>
+    <polygon points="447,104 457,108 447,112" fill="#000"/>
+    <text x="306" y="104" font-size="7.5" font-family="Courier New">supabase.functions.invoke()</text>
+    <!-- Lane 2 flow -->
+    <line x1="522" y1="156" x2="522" y2="176" stroke="#000" stroke-width="1.2"/><polygon points="518,176 522,186 526,176" fill="#000"/>
+    <line x1="522" y1="249" x2="522" y2="269" stroke="#000" stroke-width="1.2"/><polygon points="518,269 522,279 526,269" fill="#000"/>
+    <!-- Step7 → Gemini -->
+    <line x1="522" y1="349" x2="522" y2="370" stroke="#000" stroke-width="1.2"/>
+    <line x1="522" y1="370" x2="596" y2="370" stroke="#000" stroke-width="1.2"/>
+    <line x1="596" y1="370" x2="596" y2="108" stroke="#000" stroke-width="1.2"/>
+    <line x1="596" y1="108" x2="745" y2="108" stroke="#000" stroke-width="1.2"/>
+    <polygon points="745,104 755,108 745,112" fill="#000"/>
+    <text x="604" y="104" font-size="7.5" font-family="Courier New">GEMINI_API_KEY (server)</text>
+    <!-- Lane 3 flow -->
+    <line x1="820" y1="156" x2="820" y2="176" stroke="#000" stroke-width="1.2"/><polygon points="816,176 820,186 824,176" fill="#000"/>
+    <line x1="820" y1="249" x2="820" y2="269" stroke="#000" stroke-width="1.2"/><polygon points="816,269 820,279 824,269" fill="#000"/>
+    <!-- Gemini → Lane2 response -->
+    <line x1="745" y1="360" x2="596" y2="360" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="596" y1="360" x2="596" y2="430" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="596" y1="430" x2="610" y2="430" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="610,426 620,430 610,434" fill="#000"/>
+    <text x="604" y="424" font-size="7.5" font-family="Courier New">JSON response</text>
+    <!-- Lane2 cont -->
+    <line x1="522" y1="472" x2="522" y2="492" stroke="#000" stroke-width="1.2"/><polygon points="518,492 522,502 526,492" fill="#000"/>
+    <!-- Lane2 → Lane1 result -->
+    <line x1="447" y1="550" x2="298" y2="550" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="298" y1="550" x2="298" y2="435" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="298" y1="435" x2="149" y2="435" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="149,431 139,435 149,439" fill="#000"/>
+    <text x="155" y="428" font-size="7.5" font-family="Courier New">recommendations[]</text>
+    <!-- Lane1 → Lane4 product lookup -->
+    <line x1="149" y1="475" x2="149" y2="500" stroke="#000" stroke-width="1.2"/>
+    <line x1="149" y1="500" x2="894" y2="500" stroke="#000" stroke-width="1.2"/>
+    <line x1="894" y1="500" x2="894" y2="108" stroke="#000" stroke-width="1.2"/>
+    <line x1="894" y1="108" x2="989" y2="108" stroke="#000" stroke-width="1.2"/>
+    <polygon points="989,104 999,108 989,112" fill="#000"/>
+    <text x="900" y="104" font-size="7.5" font-family="Courier New">product_ids[]</text>
+    <!-- Lane4 flow -->
+    <line x1="1040" y1="156" x2="1040" y2="176" stroke="#000" stroke-width="1.2"/><polygon points="1036,176 1040,186 1044,176" fill="#000"/>
+    <line x1="1040" y1="249" x2="1040" y2="269" stroke="#000" stroke-width="1.2"/><polygon points="1036,269 1040,279 1044,269" fill="#000"/>
+  </svg>
+
+  <div style="position:absolute;top:42px;left:0;width:298px;height:18px;background:#e8e8e8;border:1.5px solid #000;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Courier New';">Browser — style-match.js</div>
+  <div style="position:absolute;top:42px;left:298px;width:298px;height:18px;background:#e8e8e8;border:1.5px solid #000;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Courier New';">Supabase Edge Function</div>
+  <div style="position:absolute;top:42px;left:596px;width:298px;height:18px;background:#e8e8e8;border:1.5px solid #000;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Courier New';">Gemini 1.5 Flash (Vision)</div>
+  <div style="position:absolute;top:42px;left:894px;width:386px;height:18px;background:#e8e8e8;border:1.5px solid #000;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Courier New';">Browser — Alpine.js UI</div>
+
+  <div class="step" style="left:30px;top:62px;width:238px;"><b>1.</b> User upload foto diri</div>
+  <div class="step filled" style="left:30px;top:138px;width:238px;"><b>2.</b> Canvas resize — max-edge: 800px</div>
+  <div class="step" style="left:30px;top:225px;width:238px;"><b>3.</b> Upload ke Supabase Storage<br>bucket: user-uploads (private)<br>path: {uid}/{session}/photo</div>
+  <div class="step filled" style="left:30px;top:325px;width:238px;"><b>4.</b> Generate signed URL (TTL: 60s)</div>
+
+  <div class="step" style="left:310px;top:62px;width:268px;"><b>5.</b> Verifikasi JWT user<br>tolak jika 401 Unauthorized</div>
+  <div class="step filled" style="left:310px;top:186px;width:268px;"><b>6.</b> Fetch foto via signed URL<br>konversi ke base64 (inline_data)</div>
+  <div class="step" style="left:310px;top:279px;width:268px;"><b>7.</b> Kirim ke Gemini API:<br>— foto (base64 inline_data)<br>— 22 produk katalog (JSON)<br>— preferensi user</div>
+  <div class="step filled" style="left:310px;top:430px;width:268px;"><b>8.</b> Parse JSON response Gemini</div>
+  <div class="step" style="left:310px;top:502px;width:268px;"><b>9.</b> Simpan ke ai_style_sessions<br>(non-fatal — tidak blok response)</div>
+
+  <div class="step" style="left:608px;top:62px;width:268px;"><b>—</b> Analisis visual foto:<br>undertone, proporsi, estetika</div>
+  <div class="step filled" style="left:608px;top:186px;width:268px;"><b>—</b> Mapping ke 22 hero products<br>berdasarkan aesthetic_tags<br>dan primary_color</div>
+  <div class="step" style="left:608px;top:279px;width:268px;"><b>—</b> Output JSON:<br>{ colour_guidance,<br>&nbsp;recommendations: [{<br>&nbsp;&nbsp;name, why_it_works,<br>&nbsp;&nbsp;product_ids[] }] }</div>
+
+  <div class="step" style="left:906px;top:62px;width:356px;"><b>10.</b> Terima product_ids[] dari recommendations</div>
+  <div class="step filled" style="left:906px;top:186px;width:356px;"><b>11.</b> Query Supabase products<br>WHERE id IN (product_ids[])<br>→ fetch nama, gambar, harga</div>
+  <div class="step dark" style="left:906px;top:279px;width:356px;"><b>12.</b> Render outfit cards<br>+ "Why it works" (Elvy)<br>+ colour_guidance panel</div>
+</div>
+
+
+<!-- ══ S4 Alpine Store ══ -->
+<div class="slide" id="s4">
+  <div class="slide-title"><h1>Alpine.js Store Global</h1><span>«class diagram» — shared state management tanpa library eksternal</span></div>
+  <svg class="arr">
+    <line x1="530" y1="165" x2="310" y2="290" stroke="#000" stroke-width="1.2"/>
+    <polygon points="313,295 306,286 316,285" fill="#000"/>
+    <text x="370" y="205" font-size="8" font-family="Courier New">«initializes»</text>
+    <line x1="530" y1="195" x2="310" y2="490" stroke="#000" stroke-width="1.2"/>
+    <polygon points="313,495 306,486 316,485" fill="#000"/>
+    <line x1="308" y1="370" x2="728" y2="280" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="724,276 732,283 727,273" fill="#000"/>
+    <line x1="308" y1="390" x2="728" y2="370" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="724,366 732,373 727,363" fill="#000"/>
+    <line x1="308" y1="410" x2="728" y2="460" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="724,456 732,463 727,453" fill="#000"/>
+    <line x1="308" y1="430" x2="728" y2="550" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="724,546 732,553 727,543" fill="#000"/>
+    <line x1="308" y1="510" x2="728" y2="180" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="724,176 732,183 727,173" fill="#000"/>
+    <text x="340" y="505" font-size="7.5" font-family="Courier New">«uses»</text>
+    <line x1="308" y1="530" x2="728" y2="640" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="724,636 732,643 727,633" fill="#000"/>
+    <line x1="130" y1="440" x2="50" y2="520" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="54,517 46,524 52,514" fill="#000"/>
+    <line x1="50" y1="520" x2="130" y2="350" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="127,354 134,345 132,356" fill="#000"/>
+    <text x="10" y="510" font-size="7.5" font-family="Courier New">sync()</text>
+  </svg>
+
+  <div class="uml" style="left:448px;top:62px;width:200px;">
+    <div class="stereo">«singleton»</div><div class="head">supabase.js</div>
+    <div class="sec"><div class="attr">+ client : SupabaseClient</div></div>
+    <div class="sec"><div class="attr">+ createClient(url, key)</div><div class="attr">+ window.supabase = client</div></div>
+  </div>
+  <div class="uml" style="left:10px;top:520px;width:120px;">
+    <div class="stereo">«storage»</div><div class="head">localStorage</div>
+    <div class="sec"><div class="attr">cart (guest mode)</div></div>
+  </div>
+  <div class="uml" style="left:80px;top:258px;width:230px;">
+    <div class="stereo">«Alpine.store»</div><div class="head">cart</div>
+    <div class="sec"><div class="attr">+ items : Array&lt;CartItem&gt;</div><div class="attr">+ count : Number</div><div class="attr">+ total : Number (Rupiah)</div></div>
+    <div class="sec"><div class="attr">+ add(product, variant, qty)</div><div class="attr">+ remove(variantId)</div><div class="attr">+ updateQty(variantId, qty)</div><div class="attr">+ sync() // localStorage &lt;-&gt; Supabase</div><div class="attr">+ clear() // post-checkout</div></div>
+  </div>
+  <div class="uml" style="left:80px;top:470px;width:230px;">
+    <div class="stereo">«Alpine.store»</div><div class="head">auth</div>
+    <div class="sec"><div class="attr">+ user : Object | null</div><div class="attr">+ isLoggedIn : Boolean</div><div class="attr">+ isAdmin : Boolean</div></div>
+    <div class="sec"><div class="attr">+ login(email, password)</div><div class="attr">+ logout()</div><div class="attr">+ onAuthChange(callback)</div></div>
+  </div>
+
+  <div class="uml" style="left:730px;top:62px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">index.html</div>
+    <div class="sec"><div class="attr">reads: auth.isLoggedIn</div><div class="attr">reads: cart.count (badge)</div></div>
+  </div>
+  <div class="uml" style="left:730px;top:168px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">product.html</div>
+    <div class="sec"><div class="attr">calls: cart.add(product, variant, qty)</div><div class="attr">calls: wishlist toggle (supabase)</div></div>
+  </div>
+  <div class="uml" style="left:730px;top:262px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">cart.html</div>
+    <div class="sec"><div class="attr">reads: cart.items, cart.total</div><div class="attr">calls: cart.remove(), updateQty()</div></div>
+  </div>
+  <div class="uml" style="left:730px;top:356px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">checkout.html</div>
+    <div class="sec"><div class="attr">reads: cart.total, cart.items</div><div class="attr">calls: cart.clear() after submit</div></div>
+  </div>
+  <div class="uml" style="left:730px;top:450px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">admin.html</div>
+    <div class="sec"><div class="attr">guard: auth.isAdmin (redirect if false)</div></div>
+  </div>
+  <div class="uml" style="left:730px;top:538px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">style-match.html</div>
+    <div class="sec"><div class="attr">check: auth.isLoggedIn</div><div class="attr">show: login prompt if guest</div></div>
+  </div>
+  <div class="uml" style="left:730px;top:626px;width:230px;">
+    <div class="stereo">«page»</div><div class="head">account.html</div>
+    <div class="sec"><div class="attr">reads: auth.user (profile data)</div><div class="attr">reads: orders, wishlist, AI sessions</div></div>
+  </div>
+  <div class="note" style="left:10px;top:644px;width:360px;">
+    Guest cart disimpan di localStorage. Saat user login,<br>
+    cart.sync() otomatis merge localStorage ke Supabase<br>
+    tabel cart_items (RLS: user_id = auth.uid()).
+  </div>
+  <div class="legend">
+    <div class="l-item"><div class="l-solid"></div> «initializes»</div>
+    <div class="l-item"><div class="l-dashed"></div> «uses» (reads / calls)</div>
+  </div>
+</div>
+
+
+<!-- ══ S5 Konfigurasi Vercel ══ -->
+<div class="slide" id="s5">
+  <div class="slide-title"><h1>Konfigurasi Vercel</h1><span>«deployment diagram» — vercel.json, routing, env vars, functions</span></div>
+  <svg class="arr">
+    <line x1="408" y1="230" x2="510" y2="230" stroke="#000" stroke-width="1.2"/>
+    <polygon points="510,226 520,230 510,234" fill="#000"/>
+    <text x="420" y="224" font-size="8" font-family="Courier New">produces</text>
+    <line x1="408" y1="270" x2="510" y2="350" stroke="#000" stroke-width="1.2"/>
+    <polygon points="507,347 514,355 511,345" fill="#000"/>
+    <text x="425" y="305" font-size="8" font-family="Courier New">injects</text>
+    <line x1="800" y1="220" x2="870" y2="220" stroke="#000" stroke-width="1.2"/>
+    <polygon points="870,216 880,220 870,224" fill="#000"/>
+    <line x1="800" y1="275" x2="870" y2="290" stroke="#000" stroke-width="1.2"/>
+    <polygon points="867,287 875,294 870,284" fill="#000"/>
+    <line x1="800" y1="320" x2="870" y2="360" stroke="#000" stroke-width="1.2"/>
+    <polygon points="867,357 875,364 870,354" fill="#000"/>
+    <line x1="290" y1="538" x2="510" y2="480" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="507,484 514,475 512,485" fill="#000"/>
+    <text x="315" y="498" font-size="7.5" font-family="Courier New">injected at build</text>
+    <line x1="290" y1="565" x2="718" y2="530" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="714,527 722,534 717,524" fill="#000"/>
+  </svg>
+
+  <div class="uml" style="left:24px;top:56px;width:382px;">
+    <div class="stereo">«configuration»</div><div class="head">vercel.json</div>
+    <div class="sec">
+      <div class="attr">buildCommand: "npm install &amp;&amp; npm run build:css &amp;&amp; echo 'window.__ENV=...' > js/__env.js"</div>
+      <div class="attr">outputDirectory: "."  (root — plain HTML, no framework build)</div>
+      <div class="attr">framework: null</div>
+      <div class="attr">runtime: Node.js 20</div>
+    </div>
+  </div>
+  <div class="uml" style="left:24px;top:248px;width:382px;">
+    <div class="stereo">«process»</div><div class="head">Build Pipeline Steps</div>
+    <div class="sec">
+      <div class="attr">Step A: npm install</div>
+      <div class="attr">Step B: npx @tailwindcss/cli -i src/input.css -o css/style.css --minify</div>
+      <div class="attr">Step C: echo "window.__ENV={SUPABASE_URL:'...', SUPABASE_ANON_KEY:'...'}" > js/__env.js</div>
+      <div class="attr">Step D: deploy static files + /api/* functions to Vercel Edge Network</div>
+    </div>
+  </div>
+  <div class="uml" style="left:24px;top:490px;width:382px;">
+    <div class="stereo">«environment»</div><div class="head">Environment Variables</div>
+    <div class="sec">
+      <div class="attr">SUPABASE_URL      — Vercel Env (injected → js/__env.js)</div>
+      <div class="attr">SUPABASE_ANON_KEY — Vercel Env (injected → js/__env.js)</div>
+      <div class="attr">ANTHROPIC_API_KEY — Vercel Env (process.env in /api/*.js)</div>
+      <div class="attr">GEMINI_API_KEY    — Supabase Secret (NOT di Vercel)</div>
+    </div>
+  </div>
+
+  <div class="uml" style="left:522px;top:56px;width:270px;">
+    <div class="stereo">«artifact»</div><div class="head">Static Output (CDN)</div>
+    <div class="sec">
+      <div class="attr">/*.html        — 13 halaman</div>
+      <div class="attr">/css/style.css — Tailwind minified</div>
+      <div class="attr">/js/*.js       — ES Modules</div>
+      <div class="attr">/images/       — assets produk</div>
+      <div class="attr">/js/__env.js   — ENV injected</div>
+    </div>
+  </div>
+  <div class="uml" style="left:522px;top:330px;width:270px;">
+    <div class="stereo">«serverless»</div><div class="head">Vercel Functions  /api/*</div>
+    <div class="sec">
+      <div class="attr">POST /api/ai-advisor.js</div>
+      <div class="attr">POST /api/analyze-product-image.js</div>
+      <div class="attr">POST /api/delete-account.js</div>
+    </div>
+    <div class="sec" style="font-size:8px;padding:3px 6px;">runtime: Node.js 20 (Fluid Compute)</div>
+  </div>
+  <div class="uml" style="left:522px;top:510px;width:270px;">
+    <div class="stereo">«routing»</div><div class="head">Routing Rules (vercel.json)</div>
+    <div class="sec">
+      <div class="attr">/api/(.*)  →  /api/$1</div>
+      <div class="attr">handle: filesystem  (static files)</div>
+      <div class="attr">/(.*) → 404 status</div>
+    </div>
+  </div>
+
+  <div class="uml" style="left:882px;top:170px;width:374px;">
+    <div class="stereo">«route result»</div><div class="head">/api/(.*) — Serverless Handler</div>
+    <div class="sec"><div class="attr">masuk ke /api/*.js handler</div><div class="attr">ANTHROPIC_API_KEY via process.env</div></div>
+  </div>
+  <div class="uml" style="left:882px;top:252px;width:374px;">
+    <div class="stereo">«route result»</div><div class="head">filesystem — Static CDN</div>
+    <div class="sec"><div class="attr">serve *.html, css/, js/, images/</div><div class="attr">Vercel Edge Network (global CDN)</div></div>
+  </div>
+  <div class="uml" style="left:882px;top:328px;width:374px;">
+    <div class="stereo">«route result»</div><div class="head">/(.*) — 404 Fallback</div>
+    <div class="sec"><div class="attr">HTTP status 404</div><div class="attr">destination: /404.html</div></div>
+  </div>
+  <div class="uml" style="left:882px;top:430px;width:374px;">
+    <div class="stereo">«external» Supabase Edge Function</div><div class="head">style-match (Deno runtime)</div>
+    <div class="sec">
+      <div class="attr">dipanggil via supabase.functions.invoke()</div>
+      <div class="attr">GEMINI_API_KEY: Supabase secret (bukan Vercel)</div>
+      <div class="attr">tidak melalui routing Vercel sama sekali</div>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="l-item"><div class="l-solid"></div> produces / routes to</div>
+    <div class="l-item"><div class="l-dashed"></div> env injection</div>
+  </div>
+</div>
+
+
+<!-- ══ S6 Deployment Pipeline ══ -->
+<div class="slide" id="s6">
+  <div class="slide-title"><h1>Deployment &amp; Build Pipeline</h1><span>«activity diagram» — GitHub → Vercel CI/CD → Produksi</span></div>
+  <svg class="arr">
+    <line x1="640" y1="100" x2="640" y2="128" stroke="#000" stroke-width="1.5"/><polygon points="636,128 640,138 644,128" fill="#000"/>
+    <line x1="640" y1="210" x2="640" y2="238" stroke="#000" stroke-width="1.5"/><polygon points="636,238 640,248 644,238" fill="#000"/>
+    <line x1="640" y1="322" x2="640" y2="350" stroke="#000" stroke-width="1.5"/><polygon points="636,350 640,360 644,350" fill="#000"/>
+    <line x1="640" y1="436" x2="640" y2="464" stroke="#000" stroke-width="1.5"/><polygon points="636,464 640,474 644,464" fill="#000"/>
+    <!-- branch left: Preview -->
+    <line x1="604" y1="488" x2="192" y2="488" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="192" y1="488" x2="192" y2="526" stroke="#000" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <polygon points="188,526 192,536 196,526" fill="#000"/>
+    <text x="280" y="482" font-size="8" font-family="Courier New">PR / branch</text>
+    <!-- branch right: Production -->
+    <line x1="676" y1="488" x2="1060" y2="488" stroke="#000" stroke-width="1.5"/>
+    <line x1="1060" y1="488" x2="1060" y2="526" stroke="#000" stroke-width="1.5"/>
+    <polygon points="1056,526 1060,536 1064,526" fill="#000"/>
+    <text x="820" y="482" font-size="8" font-family="Courier New">main branch</text>
+    <!-- LIVE arrow -->
+    <line x1="640" y1="508" x2="640" y2="572" stroke="#000" stroke-width="1.5"/><polygon points="636,572 640,582 644,572" fill="#000"/>
+  </svg>
+
+  <div class="start-node" style="left:630px;top:72px;"></div>
+
+  <div class="uml" style="left:280px;top:138px;width:720px;">
+    <div class="head">1. Developer — Local Development</div>
+    <div class="sec" style="display:grid;grid-template-columns:1fr 1fr 1fr;">
+      <div style="padding:4px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';">Edit HTML / JS / CSS</div>
+      <div style="padding:4px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';">npx tailwindcss --watch</div>
+      <div style="padding:4px 8px;font-size:8.5px;font-family:'Courier New';">test via browser / Live Server</div>
+    </div>
+  </div>
+  <div class="uml" style="left:280px;top:248px;width:720px;">
+    <div class="head">2. Git — Source Control</div>
+    <div class="sec" style="display:grid;grid-template-columns:1fr 1fr 1fr;">
+      <div style="padding:4px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';">git add .</div>
+      <div style="padding:4px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';">git commit -m "..."</div>
+      <div style="padding:4px 8px;font-size:8.5px;font-family:'Courier New';">git push origin main</div>
+    </div>
+    <div class="sec" style="font-size:8px;padding:3px 8px;">GitHub webhook → trigger Vercel CI/CD otomatis</div>
+  </div>
+  <div class="uml" style="left:120px;top:360px;width:1040px;">
+    <div class="head">3. Vercel Build (CI/CD)</div>
+    <div class="sec" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div style="padding:5px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';"><b>Step A</b><br>npm install<br>Install dependensi</div>
+      <div style="padding:5px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';"><b>Step B</b><br>npm run build:css<br>Tailwind → style.css (minified)</div>
+      <div style="padding:5px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';"><b>Step C</b><br>Inject ENV vars<br>→ js/__env.js</div>
+      <div style="padding:5px 8px;font-size:8.5px;font-family:'Courier New';"><b>Step D</b><br>Package artifacts<br>Static + Functions</div>
+    </div>
+  </div>
+
+  <!-- Diamond -->
+  <svg style="position:absolute;left:612px;top:468px;width:56px;height:40px;">
+    <polygon points="28,1 55,20 28,39 1,20" fill="#e8e8e8" stroke="#000" stroke-width="1.5"/>
+    <text x="14" y="24" font-size="8" font-family="Courier New">branch?</text>
+  </svg>
+
+  <div class="uml" style="left:24px;top:536px;width:330px;">
+    <div class="head">Preview Deployment</div>
+    <div class="sec">
+      <div class="attr">URL: elvora-git-&lt;branch&gt;.vercel.app</div>
+      <div class="attr">dibuat tiap PR / non-main branch</div>
+      <div class="attr">isolated environment (ENV sama)</div>
+    </div>
+  </div>
+  <div class="uml" style="left:878px;top:536px;width:378px;">
+    <div class="head">Production Deployment</div>
+    <div class="sec" style="display:grid;grid-template-columns:1fr 1fr;">
+      <div style="padding:4px 8px;border-right:1px solid #ccc;font-size:8.5px;font-family:'Courier New';">Static CDN<br>HTML/CSS/JS/images</div>
+      <div style="padding:4px 8px;font-size:8.5px;font-family:'Courier New';">Serverless Functions<br>/api/* (Node.js 20)</div>
+    </div>
+    <div class="sec" style="font-size:8px;padding:3px 8px;">elvorastudio.vercel.app — HTTPS otomatis via Vercel</div>
+  </div>
+
+  <div class="end-node" style="left:630px;top:584px;"></div>
+
+  <div class="legend">
+    <div class="l-item"><div class="l-solid"></div> main flow</div>
+    <div class="l-item"><div class="l-dashed"></div> conditional (PR/branch)</div>
+    <div class="l-item">Triggered otomatis oleh git push ke GitHub</div>
+  </div>
+</div>
+
+</body>
+</html>

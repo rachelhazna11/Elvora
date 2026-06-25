@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lookbook — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main>
+
+    <!-- ═══ Lookbook Hero ═══════════════════════════════════════════════════ -->
+    <div class="lookbook-hero">
+      <p class="section-label" style="color:var(--lavender);">SS 2025</p>
+      <h1 class="lookbook-hero-title">The Lookbook</h1>
+      <p class="lookbook-hero-sub">She Moves. She Leads. She Defines.</p>
+    </div>
+
+    <!-- ═══ Gallery ═════════════════════════════════════════════════════════ -->
+    <div class="lookbook-gallery">
+      <div class="gallery-grid">
+
+        <div class="gallery-item span-4">
+          <div class="gallery-bg g-bg-1" style="background-image:url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Matcha Babe</span></div>
+        </div>
+
+        <div class="gallery-item span-3">
+          <div class="gallery-bg g-bg-2" style="background-image:url('https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=500&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Soft Flow</span></div>
+        </div>
+
+        <div class="gallery-item span-3">
+          <div class="gallery-bg g-bg-3" style="background-image:url('https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=500&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Love Match</span></div>
+        </div>
+
+        <div class="gallery-item span-2">
+          <div class="gallery-bg g-bg-4" style="background-image:url('https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Hot Girl Lift</span></div>
+        </div>
+
+        <div class="gallery-item span-2">
+          <div class="gallery-bg g-bg-5" style="background-image:url('https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=400&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Studio Muse</span></div>
+        </div>
+
+        <div class="gallery-item span-6">
+          <div class="gallery-bg g-bg-6" style="background-image:url('https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=1000&q=80');background-position:center top;"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Run Era</span></div>
+        </div>
+
+        <div class="gallery-item span-3">
+          <div class="gallery-bg g-bg-7" style="background-image:url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Power Mood</span></div>
+        </div>
+
+        <div class="gallery-item span-3">
+          <div class="gallery-bg g-bg-1" style="background-image:url('https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=500&q=80');"></div>
+          <div class="gallery-overlay"><span class="gallery-label">Court Girl</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ Shop CTA ═════════════════════════════════════════════════════════ -->
+    <div class="newsletter">
+      <h2 class="newsletter-title" style="font-size:clamp(24px,3vw,36px);">Shop the Look</h2>
+      <p class="newsletter-sub">Every piece from this lookbook is available now.</p>
+      <a href="/shop.html" class="btn-primary" style="margin-top:8px;">Shop Collection</a>
+    </div>
+
+  </main>
+
+  <div id="footer-root"></div>
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+</body>
+</html>

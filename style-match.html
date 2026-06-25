@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Match — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+  <style>
+    /* ── Hero ── */
+    .sm-hero {
+      background: linear-gradient(135deg, var(--lavender) 0%, #9B87CA 100%);
+      padding: 80px 64px 64px;
+      text-align: center;
+    }
+    .sm-hero-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); margin-bottom: 16px;
+    }
+    .sm-hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      color: white; margin-bottom: 16px; line-height: 1.2;
+    }
+    .sm-hero-sub {
+      font-size: 15px; color: rgba(255,255,255,0.8);
+      max-width: 480px; margin: 0 auto; line-height: 1.7;
+    }
+
+    /* ── Layout ── */
+    .sm-main {
+      background: var(--beige); padding: 64px 32px;
+      display: flex; justify-content: center;
+    }
+    .sm-wrap { width: 100%; max-width: 720px; }
+
+    /* ── Step indicator ── */
+    .sm-steps {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 40px; justify-content: center;
+    }
+    .sm-step {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .sm-step-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: white; border: 2px solid rgba(168,191,163,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--text-muted);
+      transition: all 0.3s;
+    }
+    .sm-step.active .sm-step-dot {
+      background: var(--charcoal); border-color: var(--charcoal);
+      color: white;
+    }
+    .sm-step.done .sm-step-dot {
+      background: var(--sage); border-color: var(--sage);
+      color: white;
+    }
+    .sm-step-label { font-size: 10px; letter-spacing: 0.5px; color: var(--text-muted); }
+    .sm-step.active .sm-step-label { color: var(--charcoal); font-weight: 600; }
+    .sm-step-line {
+      flex: 1; height: 1px; background: rgba(168,191,163,0.3);
+      max-width: 80px; margin-bottom: 20px;
+    }
+
+    /* ── Card ── */
+    .sm-card {
+      background: white; border-radius: 24px;
+      padding: 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    .sm-section-title {
+      font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 20px;
+    }
+
+    /* ── Photo upload zone ── */
+    .sm-upload-zone {
+      border: 2px dashed rgba(168,191,163,0.5);
+      border-radius: 16px; padding: 40px 24px;
+      text-align: center; cursor: pointer;
+      transition: all 0.2s; background: #fafaf9;
+      position: relative; overflow: hidden;
+    }
+    .sm-upload-zone:hover, .sm-upload-zone.drag-over {
+      border-color: var(--sage);
+      background: rgba(168,191,163,0.06);
+    }
+    .sm-upload-zone input[type="file"] {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0; cursor: pointer;
+    }
+    .sm-upload-icon { font-size: 36px; margin-bottom: 12px; }
+    .sm-upload-title { font-size: 15px; font-weight: 600; color: var(--charcoal); margin-bottom: 6px; }
+    .sm-upload-hint { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Photo preview ── */
+    .sm-preview {
+      border-radius: 16px; overflow: hidden;
+      position: relative; aspect-ratio: 4/3;
+      background: var(--beige);
+    }
+    .sm-preview img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .sm-preview-remove {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,0,0,0.6); color: white; border: none;
+      border-radius: 50%; width: 32px; height: 32px;
+      cursor: pointer; font-size: 14px; display: flex;
+      align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .sm-preview-remove:hover { background: rgba(200,0,0,0.8); }
+    .sm-photo-skip {
+      text-align: center; margin-top: 12px;
+    }
+    .sm-photo-skip button {
+      background: none; border: none; font-size: 12px;
+      color: var(--text-muted); cursor: pointer; text-decoration: underline;
+      font-family: 'Poppins', sans-serif;
+    }
+    .sm-photo-skip button:hover { color: var(--charcoal); }
+
+    /* ── Preference chips ── */
+    .sm-pref-group { margin-bottom: 28px; }
+    .sm-pref-label {
+      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 10px; display: block;
+    }
+    .sm-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .sm-chip {
+      padding: 8px 16px; border-radius: 50px;
+      border: 1.5px solid rgba(168,191,163,0.4);
+      background: white; font-size: 12px; cursor: pointer;
+      font-family: 'Poppins', sans-serif; color: var(--charcoal);
+      transition: all 0.2s; user-select: none;
+    }
+    .sm-chip:hover { border-color: var(--sage); }
+    .sm-chip.selected {
+      background: var(--charcoal); color: white;
+      border-color: var(--charcoal);
+    }
+
+    /* ── CTA ── */
+    .sm-cta {
+      width: 100%; padding: 16px 32px;
+      background: var(--charcoal); color: white;
+      border: none; border-radius: 50px;
+      font-size: 14px; font-weight: 600; letter-spacing: 1px;
+      font-family: 'Poppins', sans-serif; cursor: pointer;
+      transition: all 0.3s; margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .sm-cta:hover:not(:disabled) { background: var(--sage); transform: translateY(-1px); }
+    .sm-cta:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── Loading state ── */
+    .sm-loading-card {
+      background: white; border-radius: 24px; padding: 60px 40px;
+      text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    .sm-loading-pulse {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--lavender), var(--sage));
+      margin: 0 auto 24px; display: flex; align-items: center;
+      justify-content: center; font-size: 30px;
+      animation: pulse-scale 2s ease-in-out infinite;
+    }
+    @keyframes pulse-scale {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.85; }
+    }
+    .sm-loading-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; color: var(--charcoal); margin-bottom: 8px;
+    }
+    .sm-loading-msg {
+      font-size: 13px; color: var(--text-muted); line-height: 1.7;
+      min-height: 40px; transition: opacity 0.4s;
+    }
+    .sm-loading-dots {
+      display: flex; gap: 6px; justify-content: center; margin-top: 20px;
+    }
+    .sm-loading-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--sage); animation: dot-bounce 1.4s infinite;
+    }
+    .sm-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .sm-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* ── Results ── */
+    .sm-results-header {
+      text-align: center; margin-bottom: 32px;
+    }
+    .sm-results-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); margin-bottom: 8px;
+    }
+    .sm-results-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; color: var(--charcoal); margin-bottom: 12px;
+    }
+    .sm-colour-note {
+      font-size: 13px; color: var(--text-muted); line-height: 1.7;
+      background: rgba(168,191,163,0.1); border-radius: 12px;
+      padding: 16px 20px; border-left: 3px solid var(--sage);
+    }
+
+    /* ── Outfit recommendation cards ── */
+    .sm-outfit-grid {
+      display: grid; gap: 20px; margin-top: 24px;
+    }
+    .sm-outfit-card {
+      background: white; border-radius: 20px;
+      overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .sm-outfit-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+    .sm-outfit-images {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 2px; background: var(--beige); padding: 12px; gap: 12px;
+    }
+    .sm-outfit-img-wrap {
+      aspect-ratio: 3/4; border-radius: 12px; overflow: hidden;
+      background: #f0ede8;
+    }
+    .sm-outfit-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.4s;
+    }
+    .sm-outfit-img-wrap:hover img { transform: scale(1.04); }
+    .sm-outfit-img-placeholder {
+      width: 100%; height: 100%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; color: var(--text-muted);
+    }
+    .sm-outfit-body { padding: 20px 24px 24px; }
+    .sm-outfit-number {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--sage); margin-bottom: 4px;
+    }
+    .sm-outfit-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; color: var(--charcoal); margin-bottom: 12px;
+    }
+    .sm-outfit-why {
+      font-size: 13px; color: var(--text-muted); line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .sm-outfit-colour {
+      font-size: 12px; color: var(--charcoal);
+      background: rgba(168,191,163,0.12); border-radius: 8px;
+      padding: 8px 12px; margin-bottom: 16px; line-height: 1.6;
+    }
+    .sm-outfit-products {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .sm-outfit-product-btn {
+      flex: 1; min-width: 120px;
+      background: white; border: 1.5px solid rgba(168,191,163,0.5);
+      border-radius: 50px; padding: 8px 14px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+      font-family: 'Poppins', sans-serif; cursor: pointer;
+      transition: all 0.2s; color: var(--charcoal); text-align: center;
+      text-decoration: none; display: flex; align-items: center;
+      justify-content: center; gap: 6px;
+    }
+    .sm-outfit-product-btn:hover {
+      background: var(--charcoal); color: white; border-color: var(--charcoal);
+    }
+
+    /* ── Error state ── */
+    .sm-error-card {
+      background: white; border-radius: 24px; padding: 40px;
+      text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      margin-bottom: 24px; border: 1.5px solid rgba(220,0,0,0.1);
+    }
+    .sm-error-icon { font-size: 40px; margin-bottom: 16px; }
+    .sm-error-title { font-size: 18px; font-weight: 600; color: var(--charcoal); margin-bottom: 8px; }
+    .sm-error-msg { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    .sm-retry-btn {
+      background: var(--charcoal); color: white; border: none;
+      border-radius: 50px; padding: 12px 28px; font-size: 13px;
+      font-weight: 600; font-family: 'Poppins', sans-serif;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .sm-retry-btn:hover { background: var(--sage); }
+
+    /* ── Tips ── */
+    .sm-tips {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px; margin-top: 48px;
+    }
+    .sm-tip {
+      background: white; border-radius: 16px;
+      padding: 24px 20px; text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .sm-tip-icon { font-size: 28px; margin-bottom: 10px; }
+    .sm-tip-title { font-size: 13px; font-weight: 600; color: var(--charcoal); margin-bottom: 6px; }
+    .sm-tip-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Auth gate ── */
+    .sm-auth-gate {
+      background: white; border-radius: 24px; padding: 48px 40px;
+      text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    .sm-auth-icon { font-size: 48px; margin-bottom: 16px; }
+    .sm-auth-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; color: var(--charcoal); margin-bottom: 10px;
+    }
+    .sm-auth-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; }
+    .sm-auth-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .sm-auth-login {
+      background: var(--charcoal); color: white; border: none;
+      border-radius: 50px; padding: 12px 28px; font-size: 13px;
+      font-weight: 600; font-family: 'Poppins', sans-serif;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s; display: inline-block;
+    }
+    .sm-auth-login:hover { background: var(--sage); }
+    .sm-auth-register {
+      background: transparent; color: var(--charcoal);
+      border: 1.5px solid rgba(168,191,163,0.6);
+      border-radius: 50px; padding: 12px 28px; font-size: 13px;
+      font-weight: 600; font-family: 'Poppins', sans-serif;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s; display: inline-block;
+    }
+    .sm-auth-register:hover { border-color: var(--sage); color: var(--sage); }
+
+    /* ── Spinner ── */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── x-transition utility classes (inline fallback for Tailwind CDN-less build) ── */
+    .opacity-0 { opacity: 0; }
+    .opacity-100 { opacity: 1; }
+    .translate-y-2 { transform: translateY(8px); }
+    .translate-y-4 { transform: translateY(16px); }
+    .translate-y-0 { transform: translateY(0); }
+    .scale-95 { transform: scale(0.95); }
+    .scale-100 { transform: scale(1); }
+    .transition { transition-property: all; }
+    .ease-out { transition-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+    .ease-in { transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+    .duration-200 { transition-duration: 200ms; }
+    .duration-300 { transition-duration: 300ms; }
+    .duration-400 { transition-duration: 400ms; }
+    .duration-500 { transition-duration: 500ms; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .sm-hero { padding: 60px 24px 48px; }
+      .sm-main { padding: 32px 16px; }
+      .sm-card { padding: 24px 20px; }
+      .sm-step-line { max-width: 40px; }
+      .sm-outfit-images { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── AI Chat Section ── */
+    .sm-chat-section {
+      background: white; padding: 64px 32px;
+      display: flex; justify-content: center;
+      border-top: 1px solid rgba(168,191,163,0.2);
+    }
+    .sm-chat-wrap { width: 100%; max-width: 720px; }
+    .sm-chat-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-align: center; margin-bottom: 8px;
+    }
+    .sm-chat-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; color: var(--charcoal);
+      text-align: center; margin-bottom: 8px;
+    }
+    .sm-chat-sub {
+      font-size: 14px; color: var(--text-muted);
+      text-align: center; line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .sm-chat-card {
+      background: #fafaf9; border-radius: 24px;
+      padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .sm-chat-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 1px solid rgba(168,191,163,0.2);
+    }
+    .sm-chat-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--lavender), var(--sage));
+      display: flex; align-items: center;
+      justify-content: center; font-size: 20px; flex-shrink: 0;
+    }
+    .sm-chat-name { font-size: 15px; font-weight: 600; color: var(--charcoal); }
+    .sm-chat-model { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .sm-chat-status {
+      margin-left: auto; display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--sage);
+    }
+    .sm-chat-online {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--sage); flex-shrink: 0;
+    }
+    .ai-quick-btns {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+    }
+    .ai-quick {
+      background: white; border: 1px solid rgba(168,191,163,0.5);
+      border-radius: 20px; padding: 7px 14px;
+      font-size: 11.5px; letter-spacing: 0.3px;
+      cursor: pointer; transition: all 0.2s;
+      font-family: 'Poppins', sans-serif; color: var(--charcoal);
+    }
+    .ai-quick:hover { background: var(--sage); color: white; border-color: var(--sage); }
+    .ai-chat-area {
+      background: white; border-radius: 16px;
+      padding: 20px; min-height: 260px; max-height: 380px;
+      overflow-y: auto; margin-bottom: 16px;
+      display: flex; flex-direction: column; gap: 14px;
+      scroll-behavior: smooth;
+      border: 1px solid rgba(168,191,163,0.2);
+    }
+    .ai-msg { display: flex; gap: 10px; align-items: flex-start; }
+    .ai-msg.user { flex-direction: row-reverse; }
+    .ai-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--lavender), var(--sage));
+      display: flex; align-items: center;
+      justify-content: center; font-size: 14px; flex-shrink: 0;
+    }
+    .ai-msg.user .ai-avatar { background: var(--charcoal); }
+    .ai-bubble {
+      background: #fafaf9; border: 1px solid rgba(168,191,163,0.25);
+      border-radius: 16px 16px 16px 4px;
+      padding: 12px 16px; font-size: 13.5px; line-height: 1.65;
+      color: var(--charcoal); max-width: 80%; white-space: pre-wrap;
+    }
+    .ai-msg.user .ai-bubble {
+      background: var(--charcoal); color: white;
+      border: none; border-radius: 16px 16px 4px 16px;
+    }
+    .ai-typing {
+      display: flex; gap: 5px; padding: 12px 16px;
+      background: #fafaf9; border: 1px solid rgba(168,191,163,0.25);
+      border-radius: 16px; width: fit-content;
+    }
+    .ai-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--sage); animation: ai-dot-bounce 1.2s infinite;
+    }
+    .ai-dot:nth-child(2) { animation-delay: 0.2s; }
+    .ai-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes ai-dot-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+      30% { transform: translateY(-7px); opacity: 1; }
+    }
+    .ai-input-row { display: flex; gap: 10px; }
+    .ai-input {
+      flex: 1; border: 1.5px solid rgba(168,191,163,0.4);
+      border-radius: 50px; padding: 12px 20px;
+      font-size: 13.5px; font-family: 'Poppins', sans-serif;
+      outline: none; background: white; color: var(--charcoal);
+      transition: border-color 0.2s;
+    }
+    .ai-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(168,191,163,0.15); }
+    .ai-send {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--charcoal); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; transition: background 0.2s; flex-shrink: 0; color: white;
+    }
+    .ai-send:hover:not(:disabled) { background: var(--sage); }
+    .ai-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    @media (max-width: 768px) {
+      .sm-chat-section { padding: 40px 16px; }
+      .sm-chat-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main>
+    <!-- Hero -->
+    <section class="sm-hero">
+      <p class="sm-hero-label">AI-Powered Personal Styling</p>
+      <h1 class="sm-hero-title">Meet <em>Elvy</em>, Your Style Advisor</h1>
+      <p class="sm-hero-sub">Upload fotomu, pilih preferensi aktivitas dan gaya — Elvy akan merekomendasikan outfit ELVORA yang paling sesuai denganmu.</p>
+    </section>
+
+    <!-- Main form / results (Alpine.js) -->
+    <section class="sm-main">
+      <div class="sm-wrap"
+        x-data="styleMatchApp()"
+        x-init="init()"
+        @dragover.prevent="dragOver = true"
+        @dragleave="dragOver = false"
+        @drop.prevent="handleDrop($event)">
+
+        <!-- AUTH GATE: user not logged in -->
+        <template x-if="!isLoggedIn && !authChecking">
+          <div class="sm-auth-gate"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="sm-auth-icon">🔒</div>
+            <h2 class="sm-auth-title">Login untuk Style Match</h2>
+            <p class="sm-auth-desc">
+              Fitur AI Style Match tersedia untuk member ELVORA.<br>
+              Login atau buat akun gratis untuk memulai.
+            </p>
+            <div class="sm-auth-btns">
+              <a href="/auth.html" class="sm-auth-login">Masuk</a>
+              <a href="/auth.html?tab=register" class="sm-auth-register">Daftar Gratis</a>
+            </div>
+          </div>
+        </template>
+
+        <!-- LOADING STEPS: auth check -->
+        <template x-if="authChecking">
+          <div class="sm-loading-card">
+            <div class="sm-loading-pulse">🌸</div>
+            <p style="font-size:14px;color:var(--text-muted);">Memuat...</p>
+          </div>
+        </template>
+
+        <!-- MAIN FORM (step 1 & 2) -->
+        <template x-if="isLoggedIn && step < 3 && !loading && !error">
+          <div>
+            <!-- Step indicator -->
+            <div class="sm-steps">
+              <div class="sm-step" :class="{ active: step === 1, done: step > 1 }">
+                <div class="sm-step-dot" x-text="step > 1 ? '✓' : '1'"></div>
+                <div class="sm-step-label">Foto</div>
+              </div>
+              <div class="sm-step-line"></div>
+              <div class="sm-step" :class="{ active: step === 2 }">
+                <div class="sm-step-dot">2</div>
+                <div class="sm-step-label">Preferensi</div>
+              </div>
+            </div>
+
+            <!-- STEP 1: Photo upload -->
+            <template x-if="step === 1">
+              <div class="sm-card">
+                <p class="sm-section-title">Upload Fotomu (Opsional)</p>
+
+                <!-- Preview if photo selected -->
+                <template x-if="photoPreview">
+                  <div>
+                    <div class="sm-preview">
+                      <img :src="photoPreview" alt="Foto yang diupload">
+                      <button class="sm-preview-remove" @click="removePhoto" title="Hapus foto">✕</button>
+                    </div>
+                    <p style="font-size:12px;color:var(--sage);text-align:center;margin-top:10px;">
+                      ✓ Foto siap — Elvy akan menganalisis coloring & proporsi kamu
+                    </p>
+                  </div>
+                </template>
+
+                <!-- Upload zone if no photo -->
+                <template x-if="!photoPreview">
+                  <div>
+                    <label class="sm-upload-zone" :class="{ 'drag-over': dragOver }">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        @change="handleFileSelect($event)"
+                        style="position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;cursor:pointer;">
+                      <div class="sm-upload-icon">📸</div>
+                      <div class="sm-upload-title">Pilih atau drag foto kamu</div>
+                      <div class="sm-upload-hint">
+                        JPG, PNG, WebP · Max 10 MB<br>
+                        Foto selfie atau full body untuk hasil terbaik
+                      </div>
+                    </label>
+                    <div class="sm-photo-skip">
+                      <button @click="skipPhoto">Lewati — lanjut tanpa foto</button>
+                    </div>
+                  </div>
+                </template>
+
+                <button
+                  class="sm-cta"
+                  style="margin-top:24px;"
+                  @click="step = 2">
+                  Lanjut ke Preferensi
+                  <span>→</span>
+                </button>
+              </div>
+            </template>
+
+            <!-- STEP 2: Preferences -->
+            <template x-if="step === 2">
+              <div class="sm-card">
+                <p class="sm-section-title">Preferensi Gaya</p>
+
+                <!-- Activity -->
+                <div class="sm-pref-group">
+                  <span class="sm-pref-label">Aktivitas (pilih semua yang sesuai)</span>
+                  <div class="sm-chips">
+                    <template x-for="act in activityOptions" :key="act">
+                      <button
+                        class="sm-chip"
+                        :class="{ selected: preferences.activity.includes(act) }"
+                        @click="toggleActivity(act)"
+                        x-text="act">
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Fit -->
+                <div class="sm-pref-group">
+                  <span class="sm-pref-label">Potongan favorit</span>
+                  <div class="sm-chips">
+                    <template x-for="opt in fitOptions" :key="opt">
+                      <button
+                        class="sm-chip"
+                        :class="{ selected: preferences.fit === opt }"
+                        @click="preferences.fit = preferences.fit === opt ? '' : opt"
+                        x-text="opt">
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Aesthetic -->
+                <div class="sm-pref-group">
+                  <span class="sm-pref-label">Estetika</span>
+                  <div class="sm-chips">
+                    <template x-for="opt in aestheticOptions" :key="opt">
+                      <button
+                        class="sm-chip"
+                        :class="{ selected: preferences.aesthetic === opt }"
+                        @click="preferences.aesthetic = preferences.aesthetic === opt ? '' : opt"
+                        x-text="opt">
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Colour -->
+                <div class="sm-pref-group">
+                  <span class="sm-pref-label">Palet warna</span>
+                  <div class="sm-chips">
+                    <template x-for="opt in colourOptions" :key="opt">
+                      <button
+                        class="sm-chip"
+                        :class="{ selected: preferences.colour === opt }"
+                        @click="preferences.colour = preferences.colour === opt ? '' : opt"
+                        x-text="opt">
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                  <button
+                    style="flex:0 0 auto;padding:14px 20px;border-radius:50px;border:1.5px solid rgba(168,191,163,0.4);background:white;font-family:'Poppins',sans-serif;font-size:13px;cursor:pointer;color:var(--charcoal);"
+                    @click="step = 1">
+                    ← Kembali
+                  </button>
+                  <button
+                    class="sm-cta"
+                    style="margin-top:0;flex:1;"
+                    :disabled="preferences.activity.length === 0 || loading"
+                    @click="findMatch()">
+                    <template x-if="!loading">
+                      <span>✨ Temukan Style Match-ku</span>
+                    </template>
+                    <template x-if="loading">
+                      <span style="display:flex;align-items:center;gap:8px;">
+                        <svg style="width:16px;height:16px;animation:spin 0.8s linear infinite;" viewBox="0 0 24 24" fill="none">
+                          <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                          <path style="opacity:0.85;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        Menganalisis...
+                      </span>
+                    </template>
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- LOADING state -->
+        <template x-if="loading">
+          <div class="sm-loading-card"
+            x-transition:enter="transition ease-out duration-400"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95">
+            <div class="sm-loading-pulse">🌸</div>
+            <h2 class="sm-loading-title">Elvy sedang menganalisis...</h2>
+            <p class="sm-loading-msg" x-text="loadingMsg"></p>
+            <div class="sm-loading-dots">
+              <div class="sm-loading-dot"></div>
+              <div class="sm-loading-dot"></div>
+              <div class="sm-loading-dot"></div>
+            </div>
+          </div>
+        </template>
+
+        <!-- ERROR state -->
+        <template x-if="error && !loading">
+          <div class="sm-error-card"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="sm-error-icon">😔</div>
+            <h2 class="sm-error-title">Terjadi Kesalahan</h2>
+            <p class="sm-error-msg" x-text="errorMsg"></p>
+            <button class="sm-retry-btn" @click="resetForm()">Coba Lagi</button>
+          </div>
+        </template>
+
+        <!-- RESULTS -->
+        <template x-if="results && !loading && !error">
+          <div
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 translate-y-4"
+            x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="sm-results-header">
+              <p class="sm-results-eyebrow">Style Report dari Elvy</p>
+              <h2 class="sm-results-title">Outfit Pilihanmu</h2>
+              <div class="sm-colour-note" x-show="results.colour_guidance">
+                <strong>Panduan Warna:</strong>
+                <span x-text="results.colour_guidance"></span>
+              </div>
+            </div>
+
+            <div class="sm-outfit-grid">
+              <template x-for="(outfit, idx) in results.enriched" :key="outfit.name">
+                <div class="sm-outfit-card">
+                  <!-- Product images -->
+                  <div class="sm-outfit-images" x-show="outfit.products && outfit.products.length > 0">
+                    <template x-for="product in outfit.products" :key="product.id">
+                      <div class="sm-outfit-img-wrap">
+                        <img
+                          :src="(product.image_url || '').split('?')[0] + '?w=800&q=80'"
+                          :alt="product.name"
+                          loading="lazy"
+                          style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;"
+                          @error="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
+                        <div class="sm-outfit-img-placeholder" style="display:none">👗</div>
+                      </div>
+                    </template>
+                  </div>
+                  <!-- Outfit with no matched products — show placeholder -->
+                  <div class="sm-outfit-images" x-show="!outfit.products || outfit.products.length === 0">
+                    <div class="sm-outfit-img-wrap">
+                      <div class="sm-outfit-img-placeholder">✨</div>
+                    </div>
+                  </div>
+
+                  <div class="sm-outfit-body">
+                    <p class="sm-outfit-number" x-text="'Outfit ' + (idx + 1)"></p>
+                    <h3 class="sm-outfit-name" x-text="outfit.name"></h3>
+                    <p class="sm-outfit-why" x-text="outfit.why_it_works"></p>
+                    <div class="sm-outfit-colour" x-show="outfit.colour_guidance">
+                      🎨 <span x-text="outfit.colour_guidance"></span>
+                    </div>
+
+                    <div class="sm-outfit-products" x-show="outfit.products && outfit.products.length > 0">
+                      <template x-for="product in outfit.products" :key="product.id">
+                        <a :href="'/product.html?slug=' + product.slug"
+                          class="sm-outfit-product-btn">
+                          <span x-text="product.name"></span>
+                          <span style="font-size:10px;opacity:0.7;" x-text="'Rp ' + (product.price ? product.price.toLocaleString('id-ID') : '–')"></span>
+                        </a>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- Save / Sign-up CTA + Reset -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px;">
+
+              <!-- Logged-in: session auto-saved, show link to account -->
+              <template x-if="isLoggedIn">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <a
+                    href="/account.html"
+                    style="display:inline-flex;align-items:center;gap:8px;background:var(--sage);color:white;border:none;border-radius:50px;padding:13px 28px;font-size:13px;font-weight:600;letter-spacing:0.5px;font-family:'Poppins',sans-serif;text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.background='var(--charcoal)'"
+                    onmouseout="this.style.background='var(--sage)'">
+                    ✦ Sesi Ini Tersimpan di Profilmu
+                  </a>
+                  <p style="font-size:11px;color:var(--text-muted);">Lihat riwayat Style Match di halaman akunmu</p>
+                </div>
+              </template>
+
+              <!-- Guest: prompt to sign up -->
+              <template x-if="!isLoggedIn">
+                <div style="background:white;border-radius:20px;padding:24px 28px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.06);max-width:380px;width:100%;">
+                  <p style="font-size:22px;margin-bottom:8px;">✨</p>
+                  <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:var(--charcoal);margin-bottom:6px;">Simpan Style Report-mu</h3>
+                  <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin-bottom:16px;">
+                    Buat akun ELVORA gratis untuk menyimpan rekomendasimu dan mengakses riwayat Style Match kapanpun.
+                  </p>
+                  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                    <a href="/auth.html?tab=register"
+                      style="background:var(--charcoal);color:white;border-radius:50px;padding:10px 22px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;text-decoration:none;transition:background 0.2s;"
+                      onmouseover="this.style.background='var(--sage)'"
+                      onmouseout="this.style.background='var(--charcoal)'">
+                      Daftar Gratis
+                    </a>
+                    <a href="/auth.html"
+                      style="background:white;color:var(--charcoal);border:1.5px solid rgba(168,191,163,0.5);border-radius:50px;padding:10px 22px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;text-decoration:none;transition:all 0.2s;"
+                      onmouseover="this.style.borderColor='var(--sage)';this.style.color='var(--sage)'"
+                      onmouseout="this.style.borderColor='rgba(168,191,163,0.5)';this.style.color='var(--charcoal)'">
+                      Masuk
+                    </a>
+                  </div>
+                </div>
+              </template>
+
+              <button
+                style="background:white;border:1.5px solid rgba(168,191,163,0.5);border-radius:50px;padding:12px 28px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;color:var(--charcoal);transition:all 0.2s;"
+                @click="resetForm()">
+                ↺ Cari Style Match Baru
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Tips (shown on step 1 only) -->
+        <template x-if="step === 1 && isLoggedIn && !loading && !results && !error">
+          <div class="sm-tips">
+            <div class="sm-tip">
+              <div class="sm-tip-icon">📸</div>
+              <div class="sm-tip-title">Foto Terbaik</div>
+              <div class="sm-tip-desc">Selfie atau foto full body dengan pencahayaan alami memberikan analisis paling akurat.</div>
+            </div>
+            <div class="sm-tip">
+              <div class="sm-tip-icon">🎯</div>
+              <div class="sm-tip-title">Aktivitas Spesifik</div>
+              <div class="sm-tip-desc">Pilih aktivitas yang paling sering kamu lakukan — padel, pilates, gym, yoga, atau lari.</div>
+            </div>
+            <div class="sm-tip">
+              <div class="sm-tip-icon">🎨</div>
+              <div class="sm-tip-title">Warna & Estetika</div>
+              <div class="sm-tip-desc">Suka warna netral atau bold? Kasih tau Elvy agar rekomendasinya makin personal.</div>
+            </div>
+          </div>
+        </template>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- AI Chat Section -->
+  <section class="sm-chat-section">
+    <div class="sm-chat-wrap">
+      <p class="sm-chat-eyebrow">Tanya Langsung</p>
+      <h2 class="sm-chat-heading">Chat dengan Elvy</h2>
+      <p class="sm-chat-sub">Ada pertanyaan soal koleksi, ukuran, atau aktivitas? Tanya Elvy langsung — dia siap bantu kapanpun.</p>
+
+      <div class="sm-chat-card">
+        <div class="sm-chat-header">
+          <div class="sm-chat-avatar">🌸</div>
+          <div>
+            <div class="sm-chat-name">Elvy — AI Style Advisor</div>
+            <div class="sm-chat-model">Powered by NVIDIA NIM</div>
+          </div>
+          <div class="sm-chat-status">
+            <div class="sm-chat-online"></div>
+            Online
+          </div>
+        </div>
+
+        <!-- Quick prompt chips -->
+        <div class="ai-quick-btns" id="elvy-quick-btns">
+          <button class="ai-quick" onclick="elvySendQuick('Rekomendasiin outfit padel yang stylish dong!')">🎾 Outfit padel</button>
+          <button class="ai-quick" onclick="elvySendQuick('Mau cari set pilates yang nyaman dan aesthetic, ada rekomendasi?')">🧘 Set pilates</button>
+          <button class="ai-quick" onclick="elvySendQuick('Aku ukuran M, mau gym. Outfit apa yang cocok?')">💪 Gym outfit</button>
+          <button class="ai-quick" onclick="elvySendQuick('Ada koleksi terbaru apa di ELVORA?')">✨ Koleksi terbaru</button>
+        </div>
+
+        <!-- Chat messages -->
+        <div class="ai-chat-area" id="elvy-chat">
+          <div class="ai-msg">
+            <div class="ai-avatar">🌸</div>
+            <div class="ai-bubble">Haii! Aku Elvy, style advisor kamu di ELVORA 💚 Ada yang bisa aku bantu? Mau cari outfit buat aktivitas apa?</div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="ai-input-row">
+          <input class="ai-input" id="elvy-input"
+            placeholder="Tulis pertanyaan atau cerita aktivitasmu..."
+            onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); elvySend(); }">
+          <button class="ai-send" id="elvy-send-btn" onclick="elvySend()" title="Kirim">➤</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-root"></div>
+
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+  <!-- Import style-match module to register window.submitStyleMatch -->
+  <script type="module" src="/js/style-match.js"></script>
+
+  <script>
+    // ── Elvy Chat ──
+    let elvyHistory = [];
+
+    function elvySendQuick(text) {
+      document.getElementById('elvy-quick-btns').style.display = 'none';
+      document.getElementById('elvy-input').value = text;
+      elvySend();
+    }
+
+    async function elvySend() {
+      const input = document.getElementById('elvy-input');
+      const sendBtn = document.getElementById('elvy-send-btn');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      input.value = '';
+      sendBtn.disabled = true;
+
+      elvyAppendMsg(msg, 'user');
+      elvyHistory.push({ role: 'user', content: msg });
+
+      const typingId = 'elvy-typing-' + Date.now();
+      const chat = document.getElementById('elvy-chat');
+      chat.insertAdjacentHTML('beforeend',
+        '<div class="ai-msg" id="' + typingId + '">' +
+          '<div class="ai-avatar">🌸</div>' +
+          '<div class="ai-typing">' +
+            '<div class="ai-dot"></div>' +
+            '<div class="ai-dot"></div>' +
+            '<div class="ai-dot"></div>' +
+          '</div>' +
+        '</div>'
+      );
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch('/api/ai-advisor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: elvyHistory }),
+        });
+        const data = await res.json();
+        const reply = data.reply || 'Maaf, aku lagi ada gangguan. Coba lagi ya! 🌸';
+        document.getElementById(typingId)?.remove();
+        elvyAppendMsg(reply, 'ai');
+        elvyHistory.push({ role: 'assistant', content: reply });
+      } catch {
+        document.getElementById(typingId)?.remove();
+        elvyAppendMsg('Aduh, koneksiku lagi bermasalah nih 😅 Coba lagi sebentar ya!', 'ai');
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    function elvyAppendMsg(text, role) {
+      const chat = document.getElementById('elvy-chat');
+      const isUser = role === 'user';
+      const avatar = isUser ? '👤' : '🌸';
+      const cls = isUser ? 'ai-msg user' : 'ai-msg';
+      chat.insertAdjacentHTML('beforeend',
+        '<div class="' + cls + '">' +
+          '<div class="ai-avatar">' + avatar + '</div>' +
+          '<div class="ai-bubble">' + elvyEscape(text) + '</div>' +
+        '</div>'
+      );
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function elvyEscape(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+
+  <script>
+    // ── Loading messages for UX during AI processing ──
+    const LOADING_MSGS = [
+      'Memindai palet warna dan undertone kamu...',
+      'Menyeleksi perpaduan warna yang harmonis...',
+      'Menyusun catatan personal dari Elvy...',
+      'Hampir selesai — memfinalisasi look untukmu...',
+    ];
+
+    function styleMatchApp() {
+      return {
+        // Auth
+        isLoggedIn: false,
+        authChecking: true,
+
+        // Navigation
+        step: 1,
+
+        // Photo
+        photoFile: null,
+        photoPreview: null,
+        dragOver: false,
+
+        // Preferences
+        preferences: {
+          activity: [],
+          fit: '',
+          aesthetic: '',
+          colour: '',
+        },
+
+        activityOptions: ['Padel', 'Pilates', 'Gym', 'Yoga', 'Lari', 'Tennis', 'Wellness'],
+        fitOptions: ['Relaxed', 'Fitted', 'Oversized', 'Compression'],
+        aestheticOptions: ['Minimal', 'Editorial', 'Sporty', 'Soft Luxury', 'Bold'],
+        colourOptions: ['Netral', 'Earth Tones', 'Pastel', 'Monokrom', 'Bold & Vibrant'],
+
+        // Loading
+        loading: false,
+        loadingMsg: LOADING_MSGS[0],
+        _loadingMsgInterval: null,
+
+        // Results
+        results: null,
+        error: false,
+        errorMsg: '',
+
+        // ── Init: check auth ──
+        async init() {
+          // Wait for supabase to be available on window
+          let tries = 0;
+          while (!window.supabase && tries < 20) {
+            await new Promise(r => setTimeout(r, 100));
+            tries++;
+          }
+
+          if (!window.supabase) {
+            this.authChecking = false;
+            this.isLoggedIn = false;
+            return;
+          }
+
+          try {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            this.isLoggedIn = !!session;
+          } catch {
+            this.isLoggedIn = false;
+          } finally {
+            this.authChecking = false;
+          }
+
+          // Listen for auth state changes
+          window.supabase.auth.onAuthStateChange((_event, session) => {
+            this.isLoggedIn = !!session;
+          });
+        },
+
+        // ── Photo handling ──
+        handleFileSelect(event) {
+          const file = event.target.files?.[0];
+          if (file) this.setPhoto(file);
+        },
+
+        handleDrop(event) {
+          this.dragOver = false;
+          const file = event.dataTransfer?.files?.[0];
+          if (file && file.type.startsWith('image/')) this.setPhoto(file);
+        },
+
+        setPhoto(file) {
+          if (file.size > 10 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 10 MB. Silakan pilih foto yang lebih kecil.');
+            return;
+          }
+          this.photoFile = file;
+          const reader = new FileReader();
+          reader.onload = (e) => { this.photoPreview = e.target.result; };
+          reader.readAsDataURL(file);
+        },
+
+        removePhoto() {
+          this.photoFile = null;
+          this.photoPreview = null;
+        },
+
+        skipPhoto() {
+          this.photoFile = null;
+          this.photoPreview = null;
+          this.step = 2;
+        },
+
+        // ── Preference toggle ──
+        toggleActivity(act) {
+          const idx = this.preferences.activity.indexOf(act);
+          if (idx === -1) {
+            this.preferences.activity = [...this.preferences.activity, act];
+          } else {
+            this.preferences.activity = this.preferences.activity.filter(a => a !== act);
+          }
+        },
+
+        // ── Main submit ──
+        async findMatch() {
+          if (this.preferences.activity.length === 0) return;
+
+          this.loading = true;
+          this.error = false;
+          this.results = null;
+          this.step = 99; // hide form
+
+          // Cycle loading messages
+          let msgIdx = 0;
+          this.loadingMsg = LOADING_MSGS[0];
+          this._loadingMsgInterval = setInterval(() => {
+            msgIdx = (msgIdx + 1) % LOADING_MSGS.length;
+            this.loadingMsg = LOADING_MSGS[msgIdx];
+          }, 2200);
+
+          try {
+            // Wait for window.submitStyleMatch to be available (module load)
+            let tries = 0;
+            while (!window.submitStyleMatch && tries < 30) {
+              await new Promise(r => setTimeout(r, 100));
+              tries++;
+            }
+
+            if (!window.submitStyleMatch) {
+              throw new Error('Style Match module belum dimuat. Coba refresh halaman.');
+            }
+
+            const aiResult = await window.submitStyleMatch(
+              this.photoFile,
+              this.preferences
+            );
+
+            // Enrich recommendations with full product data from Supabase
+            const enriched = await this.enrichRecommendations(aiResult.recommendations ?? []);
+
+            this.results = {
+              colour_guidance: aiResult.colour_guidance ?? '',
+              enriched,
+            };
+          } catch (err) {
+            this.error = true;
+            this.errorMsg = err.message ?? 'Terjadi kesalahan. Silakan coba lagi.';
+          } finally {
+            clearInterval(this._loadingMsgInterval);
+            this.loading = false;
+          }
+        },
+
+        // ── Enrich product IDs with full product objects ──
+        async enrichRecommendations(recommendations) {
+          if (!Array.isArray(recommendations) || recommendations.length === 0) return [];
+
+          // Collect all unique product IDs from all outfit recommendations
+          const allIds = [...new Set(
+            recommendations.flatMap(r => r.product_ids ?? [])
+          )];
+
+          // Query products table in one request
+          let productMap = {};
+          if (allIds.length > 0 && window.supabase) {
+            try {
+              const { data: products, error } = await window.supabase
+                .from('products')
+                .select('id, name, slug, base_price, product_images(url, display_order)')
+                .in('id', allIds);
+
+              if (!error && products) {
+                productMap = Object.fromEntries(products.map(p => [p.id, p]));
+              }
+            } catch (e) {
+              console.error('Failed to fetch product details:', e);
+            }
+          }
+
+          // Map each recommendation to its full product objects
+          return recommendations.map(rec => ({
+            name: rec.name,
+            colour_guidance: rec.colour_guidance,
+            why_it_works: rec.why_it_works,
+            products: (rec.product_ids ?? [])
+              .map(id => productMap[id])
+              .filter(Boolean)
+              .map(p => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                price: p.base_price,
+                image_url: (() => {
+                  const raw = p.product_images?.[0]?.url ?? null;
+                  if (!raw) return null;
+                  // bare photo ID → full Unsplash CDN URL; full URL → strip existing params
+                  return raw.startsWith('http') ? raw.split('?')[0] : `https://images.unsplash.com/${raw}`;
+                })(),
+              })),
+          }));
+        },
+
+        // ── Reset ──
+        resetForm() {
+          this.step = 1;
+          this.loading = false;
+          this.error = false;
+          this.errorMsg = '';
+          this.results = null;
+          this.photoFile = null;
+          this.photoPreview = null;
+          this.preferences = { activity: [], fit: '', aesthetic: '', colour: '' };
+          clearInterval(this._loadingMsgInterval);
+        },
+      };
+    }
+  </script>
+</body>
+</html>

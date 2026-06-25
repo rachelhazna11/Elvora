@@ -1,0 +1,14 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Daily 08:00 UTC
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase health
+        run: |
+          # Prevents Supabase free-tier project from pausing after 1 week of inactivity
+          curl -f "${{ secrets.SUPABASE_URL }}/auth/v1/health"

@@ -1,0 +1,15 @@
+{
+  "phase": "3",
+  "phase_name": "Product Catalog",
+  "created": "2026-06-14",
+  "areas_completed": ["PLP Filter"],
+  "areas_remaining": ["Product Pairings", "PDP Gallery", "PDP URL Routing", "Search Bar"],
+  "decisions": {
+    "plp_filter": {
+      "filter_axis": "Activity tabs via collections (collection_products join)",
+      "sub_categories": "Activity tabs + sub-category pills (e.g., Padel → Matcha Babe, Court Crush, Rally Ready)",
+      "state_persistence": "URL query params (?category=padel&sub=matcha-babe)",
+      "fetch_pattern": "Re-fetch from Supabase on each filter change"
+    }
+  }
+}

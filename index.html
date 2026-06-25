@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELVORA — Premium Women's Activewear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main>
+
+    <!-- ═══ Hero ═══════════════════════════════════════════════════════════ -->
+    <section class="hero">
+      <div class="hero-content">
+        <p class="hero-tag fade-up">New Collection 2025</p>
+        <h1 class="hero-title fade-up delay-1">Elevate Your<br><em>Active Life</em></h1>
+        <p class="hero-desc fade-up delay-2">Activewear designed for women who refuse to choose between performance and elegance. Feel powerful in every motion.</p>
+        <div class="hero-actions fade-up delay-3">
+          <a href="/shop.html" class="btn-primary">Discover the Collection</a>
+          <a href="/style-match.html" class="btn-secondary">Find Your Style</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img
+          src="images/website-images/Tennis.jpeg"
+          alt="Elvora Activewear"
+          class="hero-img"
+          style="object-position:center top;"
+          fetchpriority="high"
+          width="900"
+          height="1200"
+        />
+        <div class="hero-badge fade-up delay-4">
+          <div class="hero-badge-num">4.9★</div>
+          <div class="hero-badge-text">10K+ Happy Women</div>
+        </div>
+        <div class="hero-scroll">
+          <div class="scroll-line"></div>
+          <span>Scroll</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Marquee ══════════════════════════════════════════════════════════ -->
+    <div class="marquee-section" aria-hidden="true">
+      <div class="marquee-track">
+        <span class="marquee-item">Move with Grace <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Designed for Her <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Confidence in Every Motion <span class="marquee-dot"></span></span>
+        <span class="marquee-item">She Moves. She Leads. <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Built for Strength <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Elegance Redefined <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Move with Grace <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Designed for Her <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Confidence in Every Motion <span class="marquee-dot"></span></span>
+        <span class="marquee-item">She Moves. She Leads. <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Built for Strength <span class="marquee-dot"></span></span>
+        <span class="marquee-item">Elegance Redefined <span class="marquee-dot"></span></span>
+      </div>
+    </div>
+
+    <!-- ═══ Categories ════════════════════════════════════════════════════ -->
+    <section class="categories">
+      <div class="categories-header">
+        <div>
+          <p class="section-label">Shop by Category</p>
+          <h2 class="section-title">Curated for <em>Every</em><br>Movement</h2>
+        </div>
+        <a href="/shop.html" class="view-all">View All</a>
+      </div>
+      <div class="categories-grid">
+
+        <a href="/shop.html?category=padel" class="cat-card large">
+          <img src="images/website-images/Tennis.jpeg" alt="Padel" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">
+          <div class="cat-overlay"></div>
+          <div class="cat-icon">🎾</div>
+          <div class="cat-info">
+            <div class="cat-name">Padel</div>
+            <div class="cat-subs" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-top:4px;">Matcha Babe · Court Crush · Rally Ready</div>
+          </div>
+        </a>
+
+        <a href="/shop.html?category=pilates" class="cat-card medium">
+          <img src="images/website-images/Pilates.jpeg" alt="Pilates" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 70%;" loading="lazy">
+          <div class="cat-overlay"></div>
+          <div class="cat-icon">🧘</div>
+          <div class="cat-info">
+            <div class="cat-name">Pilates</div>
+            <div class="cat-subs" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-top:4px;">Soft Flow · Main Character · Studio Muse</div>
+          </div>
+        </a>
+
+        <a href="/shop.html?category=tennis" class="cat-card medium">
+          <img src="images/website-images/Tennis 2.jpeg" alt="Tennis" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">
+          <div class="cat-overlay"></div>
+          <div class="cat-icon">🎾</div>
+          <div class="cat-info">
+            <div class="cat-name">Tennis</div>
+            <div class="cat-subs" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-top:4px;">Love Match · Ace Energy · Court Girl</div>
+          </div>
+        </a>
+
+        <a href="/shop.html?category=gym" class="cat-card medium">
+          <img src="images/website-images/Gym.jpeg" alt="Gym" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position: center 70%" loading="lazy">
+          <div class="cat-overlay"></div>
+          <div class="cat-icon">💪</div>
+          <div class="cat-info">
+            <div class="cat-name">Gym</div>
+            <div class="cat-subs" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-top:4px;">Power Mood · Built Different · Hot Girl Lift</div>
+          </div>
+        </a>
+
+        <a href="/shop.html?category=running" class="cat-card medium">
+          <img src="images/website-images/Running.jpeg" alt="Running" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">
+          <div class="cat-overlay"></div>
+          <div class="cat-icon">🏃</div>
+          <div class="cat-info">
+            <div class="cat-name">Running</div>
+            <div class="cat-subs" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-top:4px;">Run Era · Pace Mode · Runner's High</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ═══ Best Sellers (Supabase) ═══════════════════════════════════════ -->
+    <section
+      class="bestsellers"
+      x-data="{
+        products: [],
+        loading: true,
+        error: false,
+        async init() {
+          try {
+            const { data, error } = await supabase
+              .from('products')
+              .select('id, name, slug, base_price, product_images(url, display_order), product_variants(colour, colour_hex)')
+              .eq('is_best_seller', true)
+              .eq('is_active', true)
+              .order('created_at', { ascending: false })
+              .limit(4);
+            if (error) throw error;
+            this.products = data || [];
+          } catch (e) {
+            this.error = true;
+          } finally {
+            this.loading = false;
+          }
+        }
+      }"
+    >
+      <div class="bestsellers-header">
+        <div>
+          <p class="section-label">Most Loved</p>
+          <h2 class="section-title">Best <em>Sellers</em></h2>
+        </div>
+        <a href="/shop.html" class="view-all">View All</a>
+      </div>
+
+      <div x-show="loading" class="products-grid">
+        <template x-for="i in 4" :key="i">
+          <div class="animate-pulse" style="background:var(--sage-light);border-radius:20px;aspect-ratio:3/4;"></div>
+        </template>
+      </div>
+
+      <div x-show="error && !loading" style="text-align:center;padding:48px 0;">
+        <p style="font-family:var(--font-display);font-size:20px;color:var(--charcoal);margin-bottom:12px;">Our best sellers are on their way.</p>
+        <a href="/shop.html" class="view-all">Explore the full collection</a>
+      </div>
+
+      <div x-show="!loading && !error" class="products-grid">
+        <template x-for="product in products" :key="product.id">
+          <a :href="'/product.html?slug=' + product.slug" class="product-card">
+            <div class="product-img">
+              <div
+                class="product-img-bg"
+                :style="'background-image:url(' + (product.product_images?.[0]?.url ?? '') + '?width=400&quality=75);width:100%;height:100%;'"
+              ></div>
+            </div>
+            <div class="product-info">
+              <p class="product-sub">Activewear</p>
+              <h3 x-text="product.name" class="product-name"></h3>
+              <p x-text="'Rp ' + Number(product.base_price).toLocaleString('id-ID')" class="product-price"></p>
+              <div class="product-swatches">
+                <template x-for="v in (product.product_variants ?? []).slice(0,4)" :key="v.colour">
+                  <span class="swatch" :style="'background:' + v.colour_hex" :title="v.colour"></span>
+                </template>
+              </div>
+            </div>
+          </a>
+        </template>
+      </div>
+    </section>
+
+    <!-- ═══ Brand Story ═══════════════════════════════════════════════════ -->
+    <section class="brand-story">
+      <div>
+        <p class="story-label">Our Story</p>
+        <h2 class="story-title">Born from the<br>belief that <em>she<br>deserves both</em></h2>
+        <p class="story-text">ELVORA was created for women who refuse to compromise. Who believe that breaking a sweat shouldn't mean breaking your style. That modesty and movement coexist beautifully.</p>
+        <p class="story-text">Every stitch is intentional. Every fabric chosen for how it moves with you — not against you.</p>
+        <div class="story-stats">
+          <div>
+            <div class="stat-num">10K+</div>
+            <div class="stat-label">Women Empowered</div>
+          </div>
+          <div>
+            <div class="stat-num">50+</div>
+            <div class="stat-label">Styles Available</div>
+          </div>
+          <div>
+            <div class="stat-num">4.9</div>
+            <div class="stat-label">Average Rating</div>
+          </div>
+        </div>
+      </div>
+      <div class="story-visual">
+        <div class="story-img-main" style="background:linear-gradient(135deg,#A8BFA3,#C6B7E2);">
+          <p class="img-placeholder-text">Strength &<br>Elegance</p>
+        </div>
+        <div class="story-img-float" style="background:linear-gradient(135deg,#D8A7A7,#C47B7B);">
+          <p class="img-placeholder-text" style="font-size:12px;">Active.<br>Feminine.<br>Free.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Testimonials (Supabase) ════════════════════════════════════════ -->
+    <section
+      class="testimonials"
+      x-data="{
+        testimonials: [],
+        loading: true,
+        staticTestimonials: [
+          { id: 1, content: 'I\'ve never felt this confident at the gym. The fabric moves with me — it feels like a second skin, but elegant.', customer_name: 'Aisha Ramadhan', activity_label: 'Yoga Instructor · Jakarta', avatar: 'A', cls: 'avatar-1' },
+          { id: 2, content: 'As someone who wears hijab, finding activewear that\'s both stylish and modest has always been a struggle. Elvora solved that.', customer_name: 'Siti Nuraini', activity_label: 'Marathon Runner · Bandung', avatar: 'S', cls: 'avatar-2' },
+          { id: 3, content: 'The quality is unreal for the price. I\'ve worn mine to yoga, casual outings, even work-from-home days. So versatile.', customer_name: 'Rina Kusuma', activity_label: 'Lifestyle Blogger · Surabaya', avatar: 'R', cls: 'avatar-3' }
+        ],
+        async init() {
+          try {
+            const { data, error } = await supabase
+              .from('testimonials')
+              .select('*')
+              .eq('is_active', true)
+              .order('display_order', { ascending: true })
+              .limit(3);
+            if (error) throw error;
+            if (data && data.length > 0) this.testimonials = data;
+            else this.testimonials = this.staticTestimonials;
+          } catch (e) {
+            this.testimonials = this.staticTestimonials;
+          } finally {
+            this.loading = false;
+          }
+        }
+      }"
+    >
+      <div class="testimonials-header">
+        <p class="section-label">Real Women. Real Stories.</p>
+        <h2 class="section-title">They <em>Love</em> Elvora</h2>
+      </div>
+
+      <div x-show="loading" class="testimonials-grid">
+        <template x-for="i in 3" :key="i">
+          <div style="background:var(--beige);border-radius:20px;height:200px;animation:pulse 1.5s infinite;"></div>
+        </template>
+      </div>
+
+      <div x-show="!loading" class="testimonials-grid">
+        <template x-for="(t, i) in testimonials" :key="t.id">
+          <div class="testi-card">
+            <div class="testi-quote">"</div>
+            <p x-text="t.content || t.quote" class="testi-text"></p>
+            <div class="testi-author">
+              <div
+                class="testi-avatar"
+                :class="t.cls || (i % 3 === 0 ? 'avatar-1' : i % 3 === 1 ? 'avatar-2' : 'avatar-3')"
+                x-text="t.avatar || (t.customer_name || 'E').charAt(0).toUpperCase()"
+              ></div>
+              <div>
+                <div x-text="t.customer_name" class="testi-name"></div>
+                <div x-text="t.activity_label || t.activity || 'Elvora Member'" class="testi-role"></div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- ═══ Instagram / Lookbook Grid ══════════════════════════════════════ -->
+    <section class="instagram">
+      <div class="insta-header">
+        <p class="section-label">Follow the Movement</p>
+        <h2 class="section-title"><em>@elvora</em>.official</h2>
+        <p class="insta-handle">Tag us to be featured</p>
+      </div>
+      <div class="insta-grid">
+        <div class="insta-item"><div class="insta-bg-1" style="height:100%;min-height:120px;"></div><div class="insta-overlay"><span class="insta-label">♡ 2.4K</span></div></div>
+        <div class="insta-item"><div class="insta-bg-2" style="height:100%;min-height:120px;"></div><div class="insta-overlay"><span class="insta-label">♡ 1.8K</span></div></div>
+        <div class="insta-item"><div class="insta-bg-3" style="height:100%;min-height:120px;"></div><div class="insta-overlay"><span class="insta-label">♡ 3.1K</span></div></div>
+        <div class="insta-item"><div class="insta-bg-4" style="height:100%;min-height:120px;"></div><div class="insta-overlay"><span class="insta-label">♡ 2.2K</span></div></div>
+        <div class="insta-item"><div class="insta-bg-5" style="height:100%;min-height:120px;"></div><div class="insta-overlay"><span class="insta-label">♡ 1.5K</span></div></div>
+        <div class="insta-item"><div class="insta-bg-6" style="height:100%;min-height:120px;"></div><div class="insta-overlay"><span class="insta-label">♡ 4.0K</span></div></div>
+      </div>
+    </section>
+
+    <!-- ═══ Newsletter (Supabase) ══════════════════════════════════════════ -->
+    <div
+      class="newsletter"
+      x-data="{
+        email: '',
+        showToast: false,
+        loading: false,
+        errorMsg: '',
+        _toastTimer: null,
+        async submitNewsletter() {
+          if (!this.email || !this.email.includes('@')) return;
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const configured = !!(window.__ENV?.SUPABASE_URL);
+            if (!configured) {
+              this.email = '';
+              this.showToast = true;
+              clearTimeout(this._toastTimer);
+              this._toastTimer = setTimeout(() => { this.showToast = false; }, 4000);
+              return;
+            }
+            const { error } = await supabase
+              .from('newsletter_subscribers')
+              .insert({ email: this.email });
+            if (error) {
+              this.errorMsg = error.code === '23505'
+                ? 'You\'re already part of the inner circle.'
+                : 'Something went wrong — please try again.';
+            } else {
+              this.email = '';
+              this.showToast = true;
+              clearTimeout(this._toastTimer);
+              this._toastTimer = setTimeout(() => { this.showToast = false; }, 4000);
+            }
+          } catch (e) {
+            this.errorMsg = 'Something went wrong — please try again.';
+          } finally {
+            this.loading = false;
+          }
+        }
+      }"
+    >
+      <h2 class="newsletter-title">First to Know.<br>First to Glow.</h2>
+      <p class="newsletter-sub">Join 10,000+ women. Get early access to new drops, exclusive offers, and movement-first content.</p>
+      <form @submit.prevent="submitNewsletter" class="newsletter-form">
+        <input
+          type="email"
+          x-model="email"
+          class="newsletter-input"
+          placeholder="Your email address"
+          aria-label="Email address"
+          required
+        />
+        <button type="submit" class="newsletter-btn" :disabled="loading">
+          <span x-show="!loading">Subscribe</span>
+          <span x-show="loading" style="display:none;">…</span>
+        </button>
+      </form>
+      <p x-show="errorMsg" x-text="errorMsg" style="display:none;color:rgba(255,255,255,0.8);font-size:13px;margin-top:16px;"></p>
+
+      <!-- Success pop-up overlay -->
+      <template x-if="showToast">
+        <div
+          x-transition:enter="transition-opacity duration-300"
+          x-transition:enter-start="opacity-0"
+          x-transition:enter-end="opacity-100"
+          x-transition:leave="transition-opacity duration-200"
+          x-transition:leave-start="opacity-100"
+          x-transition:leave-end="opacity-0"
+          @click.self="showToast = false"
+          style="position:fixed; top:0; left:0; right:0; bottom:0; z-index:500; display:flex; align-items:center; justify-content:center; background:rgba(46,46,46,0.45); backdrop-filter:blur(4px);"
+        >
+          <div style="background:#fff; border-radius:28px; padding:48px 40px; max-width:380px; width:calc(100% - 48px); text-align:center; box-shadow:0 24px 80px rgba(46,46,46,0.18);">
+            <div style="width:60px;height:60px;border-radius:50%;background:var(--sage-light);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <p style="font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--charcoal);margin-bottom:10px;line-height:1.2;">You're on the list.</p>
+            <p style="font-size:14px;color:var(--text-muted);font-weight:300;line-height:1.7;margin-bottom:32px;">Welcome to ELVORA.<br>Watch your inbox for early access drops 💌</p>
+            <button
+              @click="showToast = false"
+              style="font-family:var(--font-body);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:var(--charcoal);background:none;border:none;border-bottom:1px solid var(--charcoal);padding-bottom:2px;cursor:pointer;"
+            >Close</button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+  </main>
+
+  <div id="footer-root"></div>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+</body>
+</html>

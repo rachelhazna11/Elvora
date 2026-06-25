@@ -1,0 +1,99 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-06-17T17:03:19.700Z",
+  "phase": "05",
+  "phase_name": "ai-style-match",
+  "phase_dir": ".planning/phases/05-ai-style-match",
+  "plan": 5,
+  "task": "UAT verification + bug fixes",
+  "total_tasks": 4,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "UAT Phase 5 — run all 10 test scenarios",
+      "status": "done",
+      "commit": "none"
+    },
+    {
+      "id": 2,
+      "name": "Fix upload zone visual clipping — remove conflicting height/width from file input CSS",
+      "status": "done",
+      "commit": "none"
+    },
+    {
+      "id": 3,
+      "name": "Fix chip toggle logic for Fit/Aesthetic/Colour (single-select unselect was broken)",
+      "status": "done",
+      "commit": "none"
+    },
+    {
+      "id": 4,
+      "name": "Add mock data fallback in js/style-match.js when edge function unreachable",
+      "status": "done",
+      "commit": "none"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 5,
+      "name": "Verify fixes in browser — hard refresh on style-match.html",
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "name": "Deploy edge function to Supabase",
+      "status": "not_started",
+      "requires": "human action"
+    },
+    {
+      "id": 7,
+      "name": "Re-test UAT tests 6-10 after edge function deployment",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "Edge function style-match NOT deployed to Supabase project gxniqferbetfyvdqoolj",
+      "type": "human_action",
+      "workaround": "Mock fallback added to js/style-match.js"
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Hard refresh browser: Cmd+Shift+R on http://localhost:3999/style-match.html",
+      "context": "Code fixes applied but browser may serve cached files",
+      "blocking": true
+    },
+    {
+      "action": "Deploy edge function: supabase functions deploy style-match --project-ref gxniqferbetfyvdqoolj",
+      "context": "Not deployed — mock fallback in style-match.js bridges for UAT",
+      "blocking": false
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Edge function uses NVIDIA NIM (MiniMax-M3), NOT Gemini as VERIFICATION.md incorrectly stated",
+      "rationale": "Code inspection confirmed NVIDIA_API_KEY in index.ts",
+      "phase": "05"
+    },
+    {
+      "decision": "Client-side mock fallback added in js/style-match.js",
+      "rationale": "Allows testing full UI flow without edge function deployed",
+      "phase": "05"
+    },
+    {
+      "decision": "Upload zone fix: removed height:100%+width:100% from file input — conflicted with top:0+bottom:0",
+      "rationale": "CSS constraint conflict caused 259px computed height, breaking label layout",
+      "phase": "05"
+    }
+  ],
+  "uncommitted_files": [
+    "style-match.html",
+    "js/style-match.js",
+    ".planning/phases/05-ai-style-match/05-UAT.md",
+    ".planning/STATE.md"
+  ],
+  "next_action": "Hard refresh browser (Cmd+Shift+R) on http://localhost:3999/style-match.html. Login, test upload zone, chip toggle, and submit flow with mock fallback.",
+  "context_notes": "All 4 code fixes confirmed in files. Session ended before browser verification. Mock fallback makes tests 6-10 testable locally."
+}

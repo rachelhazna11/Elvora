@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Your Profile — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main>
+    <div class="auth-page">
+
+      <!-- LEFT PANEL -->
+      <aside class="auth-panel-left" role="presentation"
+        style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&q=80');">
+        <div class="auth-panel-overlay"></div>
+        <div class="auth-panel-content">
+          <p class="auth-wordmark">ELVORA</p>
+          <p class="auth-tagline">ALMOST THERE</p>
+        </div>
+      </aside>
+
+      <!-- RIGHT PANEL -->
+      <div class="auth-panel-right">
+        <div class="auth-form-wrap"
+          x-data="{
+            loading: false,
+            checking: true,
+            error: '',
+            _user: null,
+            spFirst: '', spLast: '', spUsername: '', spPassword: '', spConfirm: '',
+
+            async init() {
+              const run = async () => {
+                const { data: { user } } = await window.supabase.auth.getUser();
+                if (!user) { window.location.href = '/auth.html'; return; }
+
+                // If user already has a username, they've completed setup
+                const { data: prof } = await window.supabase
+                  .from('user_profiles').select('username, first_name, last_name').eq('id', user.id).single();
+                if (prof?.username) { window.location.href = '/account.html'; return; }
+
+                this._user = user;
+                // Pre-fill from Google metadata
+                const meta = user.user_metadata || {};
+                this.spFirst = meta.given_name || meta.name?.split(' ')[0] || '';
+                this.spLast = meta.family_name || meta.name?.split(' ').slice(1).join(' ') || '';
+                this.checking = false;
+              };
+              if (window.supabase) { run(); }
+              else { window.addEventListener('elvora:ready', run, { once: true }); }
+            },
+
+            async handleSetup() {
+              this.error = '';
+              if (!this.spFirst.trim()) { this.error = 'First name is required.'; return; }
+              if (!this.spUsername.trim()) { this.error = 'Username is required.'; return; }
+              if (!/^[a-zA-Z0-9_]+$/.test(this.spUsername)) { this.error = 'Username may only contain letters, numbers, and underscores.'; return; }
+              if (this.spPassword.length < 8) { this.error = 'Password must be at least 8 characters.'; return; }
+              if (this.spPassword !== this.spConfirm) { this.error = 'Passwords do not match.'; return; }
+
+              this.loading = true;
+              try {
+                // Save profile
+                const { error: profileError } = await window.supabase
+                  .from('user_profiles')
+                  .upsert(
+                    { id: this._user.id, first_name: this.spFirst, last_name: this.spLast, username: this.spUsername },
+                    { onConflict: 'id' }
+                  );
+                if (profileError) throw profileError;
+
+                // Set password for Google OAuth user
+                const { error: pwError } = await window.supabase.auth.updateUser({ password: this.spPassword });
+                if (pwError) throw pwError;
+
+                Toastify({
+                  text: 'Welcome to Elvora, ' + this.spFirst + '!',
+                  duration: 2000, gravity: 'bottom', position: 'right',
+                  style: { background: 'var(--sage)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' }
+                }).showToast();
+                setTimeout(() => { window.location.href = '/shop.html'; }, 2000);
+              } catch (e) {
+                this.error = e.message?.includes('already') && e.message?.includes('username')
+                  ? 'This username is already taken. Please choose another.'
+                  : (e.message || 'Something went wrong. Please try again.');
+              } finally { this.loading = false; }
+            }
+          }">
+
+          <div x-show="checking" style="padding:40px 0;text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:14px;letter-spacing:2px;">
+            LOADING…
+          </div>
+
+          <div x-show="!checking">
+            <h1 class="auth-form-title">Complete Your Profile</h1>
+            <p class="auth-form-sub">One last step — choose a username and set your password</p>
+
+            <div class="auth-name-row">
+              <div class="form-group">
+                <label class="form-label" for="sp-first">First Name</label>
+                <input
+                  class="form-input"
+                  type="text"
+                  id="sp-first"
+                  x-model="spFirst"
+                  placeholder="Your first name"
+                  required
+                  style="font-size:16px;">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="sp-last">Last Name</label>
+                <input
+                  class="form-input"
+                  type="text"
+                  id="sp-last"
+                  x-model="spLast"
+                  placeholder="Your last name"
+                  style="font-size:16px;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sp-username">Username</label>
+              <input
+                class="form-input"
+                type="text"
+                id="sp-username"
+                x-model="spUsername"
+                placeholder="letters, numbers, underscores"
+                required
+                autocomplete="username"
+                style="font-size:16px;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sp-pw">Password</label>
+              <input
+                class="form-input"
+                type="password"
+                id="sp-pw"
+                x-model="spPassword"
+                placeholder="Min. 8 characters"
+                required
+                autocomplete="new-password"
+                style="font-size:16px;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sp-confirm">Confirm Password</label>
+              <input
+                class="form-input"
+                type="password"
+                id="sp-confirm"
+                x-model="spConfirm"
+                placeholder="Re-enter password"
+                required
+                autocomplete="new-password"
+                style="font-size:16px;"
+                @blur="if(spConfirm && spConfirm !== spPassword) error = 'Passwords do not match.'; else if(error === 'Passwords do not match.') error = '';">
+            </div>
+
+            <p x-show="error"
+              x-text="error"
+              role="alert"
+              style="color:var(--rose);font-size:14px;margin-top:8px;display:none;margin-bottom:12px;"></p>
+
+            <button
+              class="form-submit"
+              @click.prevent="handleSetup()"
+              :disabled="loading"
+              x-text="loading ? 'Saving…' : 'Complete Setup'"
+              type="button"></button>
+          </div>
+
+        </div><!-- /.auth-form-wrap -->
+      </div><!-- /.auth-panel-right -->
+
+    </div><!-- /.auth-page -->
+  </main>
+
+  <div id="footer-root"></div>
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/components.js"></script>
+  <script type="module" src="/js/auth.js"></script>
+</body>
+</html>

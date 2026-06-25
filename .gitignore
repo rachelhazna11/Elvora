@@ -1,0 +1,15 @@
+.env
+node_modules/
+# Generated CSS — not committed; Netlify builds it
+css/style.css
+# Generated env injection — created at Netlify build time, never commit
+js/__env.js
+.DS_Store
+*.log
+
+# Local Netlify folder
+.netlify
+.vercel
+
+# Claude Code worktrees (local only, never commit)
+.claude/worktrees/

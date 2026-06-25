@@ -1,0 +1,77 @@
+[
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000001",
+    "folder": "./images/01-contour-seam-legging",
+    "alt_prefix": "Contour Seam Legging"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000002",
+    "folder": "./images/02-court-racerback-bra",
+    "alt_prefix": "Court Racerback Bra"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000003",
+    "folder": "./images/03-twist-ease-long-sleeve",
+    "alt_prefix": "Twist Ease Long Sleeve"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000004",
+    "folder": "./images/04-kinetic-crop-tee",
+    "alt_prefix": "Kinetic Crop Tee"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000005",
+    "folder": "./images/05-active-flow-tunic",
+    "alt_prefix": "Active Flow Tunic"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000006",
+    "folder": "./images/06-swift-crop-long-sleeve",
+    "alt_prefix": "Swift Crop Long Sleeve"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000007",
+    "folder": "./images/07-motion-marl-hoodie",
+    "alt_prefix": "Motion Marl Hoodie"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000008",
+    "folder": "./images/08-revive-half-zip",
+    "alt_prefix": "Revive Half-Zip"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000009",
+    "folder": "./images/09-shell-run-jacket",
+    "alt_prefix": "Shell Run Jacket"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000010",
+    "folder": "./images/10-pace-running-shorts",
+    "alt_prefix": "Pace Running Shorts"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000011",
+    "folder": "./images/11-soft-day-wide-leg-set",
+    "alt_prefix": "Soft Day Wide-Leg Set"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000012",
+    "folder": "./images/12-polo-court-set",
+    "alt_prefix": "Polo Court Set"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000013",
+    "folder": "./images/13-grand-slam-court-dress",
+    "alt_prefix": "Grand Slam Court Dress"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000014",
+    "folder": "./images/14-rally-pleated-court-skirt",
+    "alt_prefix": "Rally Pleated Court Skirt"
+  },
+  {
+    "product_id": "c2000000-0000-0000-0000-000000000015",
+    "folder": "./images/15-ace-tennis-dress",
+    "alt_prefix": "Ace Tennis Dress"
+  }
+]

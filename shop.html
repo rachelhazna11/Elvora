@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- Toastify for ATC stub notifications (Pitfall 6 prevention) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <!-- Sub-category data inlined synchronously so window.SUBCATEGORY_STYLES is available
+       before Alpine initialises — avoids race condition with the ES module version. -->
+  <script>
+  window.SUBCATEGORY_STYLES = [
+    { slug: 'matcha-babe',     name: 'Matcha Babe',     category: 'padel'    },
+    { slug: 'court-crush',     name: 'Court Crush',     category: 'padel'    },
+    { slug: 'rally-ready',     name: 'Rally Ready',     category: 'padel'    },
+    { slug: 'soft-flow',       name: 'Soft Flow',       category: 'pilates'  },
+    { slug: 'main-character',  name: 'Main Character',  category: 'pilates'  },
+    { slug: 'studio-muse',     name: 'Studio Muse',     category: 'pilates'  },
+    { slug: 'love-match',      name: 'Love Match',      category: 'tennis'   },
+    { slug: 'ace-energy',      name: 'Ace Energy',      category: 'tennis'   },
+    { slug: 'court-girl',      name: 'Court Girl',      category: 'tennis'   },
+    { slug: 'power-mood',      name: 'Power Mood',      category: 'training' },
+    { slug: 'built-different', name: 'Built Different', category: 'training' },
+    { slug: 'hot-girl-lift',   name: 'Hot Girl Lift',   category: 'training' },
+    { slug: 'run-era',         name: 'Run Era',          category: 'running'  },
+    { slug: 'pace-mode',       name: 'Pace Mode',       category: 'running'  },
+    { slug: 'runners-high',    name: "Runner's High",   category: 'running'  },
+  ];
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main
+    x-data="{
+      products: [],
+      loading: true,
+      category: 'all',
+      sub: null,
+      sort: 'new-arrivals',
+      search: '',
+
+      async init() {
+        const params = new URLSearchParams(window.location.search);
+        this.category = params.get('category') || 'all';
+        this.sub      = params.get('sub') || null;
+        this.sort     = params.get('sort') || 'new-arrivals';
+        this.search   = params.get('search') || '';
+        const run = async () => { await this.fetchProducts(); await this.initWishlist(); };
+        if (window.getProducts) { run(); }
+        else { window.addEventListener('elvora:ready', run, { once: true }); }
+      },
+
+      sizePickerProduct: null,
+
+      sizesForPicker() {
+        if (!this.sizePickerProduct) return [];
+        const p = this.sizePickerProduct;
+        const seen = new Set();
+        return (p.product_variants || []).filter(v => {
+          if (v.colour !== p.activeColour || seen.has(v.size)) return false;
+          seen.add(v.size);
+          return true;
+        });
+      },
+
+      openSizePicker(p) { this.sizePickerProduct = p; },
+      closeSizePicker() { this.sizePickerProduct = null; },
+
+      addWithSize(variant) {
+        const p = this.sizePickerProduct;
+        Alpine.store('cart').add({
+          productId: p.id,
+          variantId: variant.id,
+          name: p.name,
+          slug: p.slug,
+          price: p.base_price,
+          image: p.activeImage || '',
+          colour: p.activeColour || '',
+          size: variant.size,
+        });
+        Alpine.store('cart').openDrawer();
+        this.closeSizePicker();
+      },
+
+      wishlistedIds: new Set(),
+
+      async initWishlist() {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await window.supabase
+          .from('wishlist_items')
+          .select('product_id')
+          .eq('user_id', user.id);
+        this.wishlistedIds = new Set((data || []).map(r => r.product_id));
+      },
+
+      async toggleWishlist(productId) {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (!user) {
+          Toastify({
+            text: 'Sign in to save items to your wishlist',
+            duration: 3000,
+            gravity: 'bottom', position: 'right',
+            style: { background: 'var(--charcoal)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' },
+            onClick() { window.location.href = '/auth.html?tab=signin'; }
+          }).showToast();
+          setTimeout(() => { window.location.href = '/auth.html?tab=signin'; }, 2000);
+          return;
+        }
+        const wasWishlisted = this.wishlistedIds.has(productId);
+        if (wasWishlisted) {
+          this.wishlistedIds = new Set([...this.wishlistedIds].filter(id => id !== productId));
+          const { error } = await window.supabase.from('wishlist_items').delete().eq('user_id', user.id).eq('product_id', productId);
+          if (error) {
+            this.wishlistedIds = new Set([...this.wishlistedIds, productId]);
+            Toastify({ text: 'Couldn\'t save item — try again', duration: 3000, gravity: 'bottom', position: 'right',
+              style: { background: 'var(--rose)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' } }).showToast();
+          }
+        } else {
+          this.wishlistedIds = new Set([...this.wishlistedIds, productId]);
+          const { error } = await window.supabase.from('wishlist_items').insert({ user_id: user.id, product_id: productId });
+          if (error) {
+            this.wishlistedIds = new Set([...this.wishlistedIds].filter(id => id !== productId));
+            Toastify({ text: 'Couldn\'t save item — try again', duration: 3000, gravity: 'bottom', position: 'right',
+              style: { background: 'var(--rose)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' } }).showToast();
+          }
+        }
+      },
+
+      async fetchProducts() {
+        this.loading = true;
+        try {
+          const result = await window.getProducts({
+            category: this.category,
+            sub: this.sub,
+            sort: this.sort,
+            search: this.search
+          });
+          const raw = result.data || [];
+          this.products = raw.map(p => {
+            const images   = (p.product_images || []).sort((a, b) => a.display_order - b.display_order);
+            const variants = p.product_variants || [];
+
+            const nu = u => u ? u.split('?')[0] : '';
+            const firstUrl    = images.length > 0 ? nu(images[0].url) : '';
+            const firstColour = variants.length > 0 ? variants[0].colour : '';
+
+            const seen = new Set();
+            const uniqueColours = [];
+            for (const v of variants) {
+              if (!seen.has(v.colour)) {
+                seen.add(v.colour);
+                const variantImage = images.find(img => img.colour === v.colour);
+                uniqueColours.push({
+                  colour:     v.colour,
+                  colour_hex: v.colour_hex,
+                  image:      variantImage ? nu(variantImage.url) : firstUrl,
+                });
+              }
+            }
+
+            return {
+              ...p,
+              activeImage:   firstUrl,
+              defaultImage:  firstUrl,
+              activeColour:  firstColour,
+              defaultColour: firstColour,
+              uniqueColours,
+            };
+          });
+        } catch (err) {
+          console.error('fetchProducts error:', err);
+          this.products = [];
+        }
+        this.loading = false;
+        this.syncURL();
+      },
+
+      syncURL() {
+        const params = new URLSearchParams();
+        if (this.category && this.category !== 'all') params.set('category', this.category);
+        if (this.sub) params.set('sub', this.sub);
+        if (this.sort && this.sort !== 'new-arrivals') params.set('sort', this.sort);
+        if (this.search) params.set('search', this.search);
+        const qs = params.toString();
+        history.replaceState(null, '', qs ? '?' + qs : window.location.pathname);
+      }
+    }"
+  >
+
+    <!-- ═══ Shop Hero ════════════════════════════════════════════════════════ -->
+    <div class="shop-hero">
+      <p class="section-label">The Collection</p>
+      <h1 class="shop-hero-title">Welcome to Elvora</h1>
+      <p class="shop-hero-sub">
+        <span x-text="products.length + ' styles · Free shipping above Rp 500K'"></span>
+      </p>
+    </div>
+
+    <!-- ═══ Shop Body ════════════════════════════════════════════════════════ -->
+    <div class="shop-body">
+
+      <!-- Toolbar: activity tabs + sort select -->
+      <div class="shop-toolbar">
+        <div class="filter-pills">
+          <button
+            class="filter-pill"
+            :class="category === 'all' && 'active'"
+            :aria-pressed="category === 'all'"
+            @click="category='all'; sub=null; fetchProducts()"
+            type="button"
+          >All</button>
+          <button
+            class="filter-pill"
+            :class="category === 'padel' && 'active'"
+            :aria-pressed="category === 'padel'"
+            @click="category='padel'; sub=null; fetchProducts()"
+            type="button"
+          >Padel</button>
+          <button
+            class="filter-pill"
+            :class="category === 'pilates' && 'active'"
+            :aria-pressed="category === 'pilates'"
+            @click="category='pilates'; sub=null; fetchProducts()"
+            type="button"
+          >Pilates</button>
+          <button
+            class="filter-pill"
+            :class="category === 'tennis' && 'active'"
+            :aria-pressed="category === 'tennis'"
+            @click="category='tennis'; sub=null; fetchProducts()"
+            type="button"
+          >Tennis</button>
+          <button
+            class="filter-pill"
+            :class="category === 'training' && 'active'"
+            :aria-pressed="category === 'training'"
+            @click="category='training'; sub=null; fetchProducts()"
+            type="button"
+          >Training</button>
+          <button
+            class="filter-pill"
+            :class="category === 'running' && 'active'"
+            :aria-pressed="category === 'running'"
+            @click="category='running'; sub=null; fetchProducts()"
+            type="button"
+          >Running</button>
+        </div>
+
+        <div class="shop-sort">
+          <span>Sort by</span>
+          <select class="sort-select" x-model="sort" @change="fetchProducts()">
+            <option value="new-arrivals">New Arrivals</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="best-sellers">Best Sellers</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Skeleton loading grid — shown while fetching -->
+      <div class="shop-grid" x-show="loading" style="display:none;">
+        <template x-for="n in 6" :key="n">
+          <div class="product-card skeleton-shimmer" style="min-height: 400px;"></div>
+        </template>
+      </div>
+
+      <!-- Product grid — Supabase-backed -->
+      <div class="shop-grid" x-show="!loading && products.length > 0" style="display:none;">
+        <template x-for="(p, index) in products" :key="p.id">
+          <a :href="'/product.html?slug=' + p.slug" class="product-card">
+            <div class="product-img">
+              <img
+                :src="(p.activeImage || '') + '?w=800&q=80'"
+                :alt="p.name"
+                width="400"
+                height="533"
+                :loading="index < 4 ? 'eager' : 'lazy'"
+                class="w-full h-full object-cover object-top"
+                style="transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);"
+              >
+              <button
+                class="wishlist-btn"
+                type="button"
+                :class="{ 'active': wishlistedIds.has(p.id) }"
+                @click.prevent.stop="toggleWishlist(p.id)"
+                :aria-label="wishlistedIds.has(p.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+                :aria-pressed="wishlistedIds.has(p.id)"
+              ><span x-text="wishlistedIds.has(p.id) ? '♥' : '♡'"></span></button>
+            </div>
+            <div class="product-info">
+              <h3 x-text="p.name" class="product-name"></h3>
+              <div class="product-price-row">
+                <span x-text="'$' + Number(p.base_price).toFixed(2)" class="product-price"></span>
+              </div>
+              <!-- Colour swatches — up to 4 visible -->
+              <div class="product-swatches">
+                <template x-for="v in p.uniqueColours.slice(0, 4)" :key="v.colour">
+                  <button
+                    class="swatch"
+                    type="button"
+                    :style="'background-color:' + v.colour_hex + '; outline: ' + (p.activeColour === v.colour ? '1.5px solid var(--charcoal)' : 'none') + '; outline-offset: 2px;'"
+                    :aria-label="v.colour"
+                    :aria-pressed="p.activeColour === v.colour"
+                    @mouseenter="p.activeColour = v.colour; p.activeImage = v.image"
+                    @mouseleave="p.activeColour = p.defaultColour; p.activeImage = p.defaultImage"
+                    @click.prevent="p.activeColour = v.colour; p.activeImage = v.image"
+                  ></button>
+                </template>
+              </div>
+              <!-- Add to Bag — opens size picker before adding to cart -->
+              <button
+                class="add-cart-btn"
+                type="button"
+                @click.prevent.stop="openSizePicker(p)"
+              >Select Size</button>
+            </div>
+          </a>
+        </template>
+      </div>
+
+      <!-- Empty state — shown when Supabase returns 0 products -->
+      <div class="shop-empty" x-show="!loading && products.length === 0" style="display:none;">
+        <h2 style="font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--charcoal); margin-bottom: 12px;">Nothing here yet.</h2>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.8; margin-bottom: 28px; max-width: 360px;">
+          We couldn't find any styles matching your filters. Try a different activity or browse the full collection.
+        </p>
+        <button
+          class="btn-secondary"
+          type="button"
+          @click="category='all'; sub=null; fetchProducts()"
+        >Browse All Styles</button>
+      </div>
+
+    </div><!-- end .shop-body -->
+
+    <!-- Size picker bottom sheet -->
+    <div
+      x-show="sizePickerProduct"
+      @click.self="closeSizePicker()"
+      style="display:none;position:fixed;inset:0;background:rgba(30,28,26,0.45);z-index:900;align-items:flex-end;justify-content:center;"
+      :style="sizePickerProduct ? 'display:flex;' : 'display:none;'"
+    >
+      <div
+        @click.stop
+        style="background:var(--cream);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:28px 24px 44px;box-shadow:0 -8px 40px rgba(0,0,0,0.12);"
+      >
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div>
+            <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:4px;" x-text="sizePickerProduct?.activeColour || ''"></p>
+            <p style="font-family:var(--font-display);font-size:20px;font-weight:400;color:var(--charcoal);" x-text="sizePickerProduct?.name || ''"></p>
+          </div>
+          <button
+            @click="closeSizePicker()"
+            style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);font-size:20px;line-height:1;"
+            aria-label="Close size picker"
+          >✕</button>
+        </div>
+
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:20px 0 10px;">Select a size</p>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <template x-for="v in sizesForPicker()" :key="v.id">
+            <button
+              @click="addWithSize(v)"
+              :disabled="v.stock_quantity <= 0"
+              style="min-width:56px;padding:11px 18px;border:1px solid var(--charcoal);border-radius:4px;font-size:13px;font-family:var(--font-body);letter-spacing:0.04em;cursor:pointer;background:white;color:var(--charcoal);transition:background 0.15s,color 0.15s;"
+              :style="v.stock_quantity <= 0 ? 'opacity:0.35;cursor:not-allowed;text-decoration:line-through;' : ''"
+              x-text="v.size"
+            ></button>
+          </template>
+          <template x-if="sizesForPicker().length === 0">
+            <p style="font-size:13px;color:var(--text-muted);">No sizes available for this colour.</p>
+          </template>
+        </div>
+
+        <a
+          :href="sizePickerProduct ? '/product.html?slug=' + sizePickerProduct.slug : '#'"
+          style="display:block;text-align:center;margin-top:22px;font-size:12px;color:var(--text-muted);text-decoration:underline;letter-spacing:0.06em;"
+        >View full details & size guide →</a>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="footer-root"></div>
+
+  <!-- Script loading order (per PATTERNS.md):
+       1. __env.js  — plain script (env vars)
+       2. supabase.js — ES module (Supabase client)
+       3. products.js — ES module (exposes getProducts etc. to window)
+       4. subcategory-styles.js — ES module (exposes SUBCATEGORY_STYLES to window)
+       5. components.js — ES module (nav/footer + Alpine stores)
+  -->
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/products.js"></script>
+  <script type="module" src="/js/subcategory-styles.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+</body>
+</html>

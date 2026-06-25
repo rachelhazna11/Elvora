@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main x-data="checkoutData()" class="checkout-page" id="checkout-main">
+    <div class="checkout-page-inner">
+      <div x-show="step < 4" style="display:none;margin-bottom:20px;">
+        <button onclick="history.length > 1 ? history.back() : (window.location.href='/cart.html')"
+          style="display:inline-flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;letter-spacing:0.08em;color:var(--text-muted);padding:0;text-transform:uppercase;"
+          aria-label="Go back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Back
+        </button>
+      </div>
+      <h1 class="checkout-page-heading" x-show="step < 4" style="display:none;">Checkout</h1>
+
+      <!-- Step indicator (hidden on confirmation) -->
+      <div x-show="step < 4" class="checkout-step-indicator" style="display:none;" aria-label="Checkout progress" role="progressbar">
+        <template x-for="(label, i) in stepLabels" :key="i">
+          <div style="display:flex;flex-direction:column;align-items:center;flex:1 1 0;">
+            <div style="display:flex;align-items:center;width:100%;">
+              <div
+                class="step-dot"
+                :class="{ 'done': i + 1 < step, 'active': i + 1 === step, 'pending': i + 1 > step }"
+                :aria-label="label + (i + 1 < step ? ' (complete)' : i + 1 === step ? ' (current)' : '')"
+                x-text="i + 1 < step ? '✓' : i + 1"
+              ></div>
+              <template x-if="i < stepLabels.length - 1">
+                <div
+                  class="step-connector"
+                  :class="{ 'done': i + 1 < step, 'pending': i + 1 >= step }"
+                ></div>
+              </template>
+            </div>
+            <span
+              class="step-label"
+              :class="{ 'done': i + 1 < step, 'active': i + 1 === step }"
+              x-text="label"
+              style="font-family:var(--font-body);"
+            ></span>
+          </div>
+        </template>
+      </div>
+
+      <!-- Error message (global) -->
+      <div
+        x-show="errorMsg"
+        x-text="errorMsg"
+        style="display:none;background:#FEE2E2;color:#991B1B;border-radius:12px;padding:14px 20px;font-size:14px;margin-bottom:24px;font-family:var(--font-body);"
+        role="alert"
+      ></div>
+
+      <!-- Main layout grid -->
+      <div class="checkout-layout">
+
+        <!-- Left: step content -->
+        <div>
+
+          <!-- Step 1: Shipping -->
+          <div x-show="step === 1" style="display:none;" role="region" aria-label="Shipping information">
+            <div class="checkout-card">
+              <h2 class="checkout-card-title">Shipping Information</h2>
+
+              <!-- Email (guests only) -->
+              <div x-show="!$store.auth.loggedIn" class="checkout-form-group" style="display:none;">
+                <label for="checkout-email" class="checkout-form-label">Email Address *</label>
+                <input
+                  id="checkout-email"
+                  type="email"
+                  x-model="email"
+                  placeholder="your@email.com"
+                  class="checkout-form-input"
+                  :class="{ 'error': errors.email }"
+                  autocomplete="email"
+                >
+                <p x-show="errors.email" x-text="errors.email" class="checkout-field-error" style="display:none;" role="alert"></p>
+              </div>
+
+              <!-- Name row -->
+              <div class="checkout-form-row checkout-form-group">
+                <div>
+                  <label for="checkout-first-name" class="checkout-form-label">First Name *</label>
+                  <input
+                    id="checkout-first-name"
+                    type="text"
+                    x-model="firstName"
+                    placeholder="Anisa"
+                    class="checkout-form-input"
+                    :class="{ 'error': errors.firstName }"
+                    autocomplete="given-name"
+                  >
+                  <p x-show="errors.firstName" x-text="errors.firstName" class="checkout-field-error" style="display:none;" role="alert"></p>
+                </div>
+                <div>
+                  <label for="checkout-last-name" class="checkout-form-label">Last Name *</label>
+                  <input
+                    id="checkout-last-name"
+                    type="text"
+                    x-model="lastName"
+                    placeholder="Rahmawati"
+                    class="checkout-form-input"
+                    :class="{ 'error': errors.lastName }"
+                    autocomplete="family-name"
+                  >
+                  <p x-show="errors.lastName" x-text="errors.lastName" class="checkout-field-error" style="display:none;" role="alert"></p>
+                </div>
+              </div>
+
+              <!-- Address -->
+              <div class="checkout-form-group">
+                <label for="checkout-address" class="checkout-form-label">Street Address *</label>
+                <input
+                  id="checkout-address"
+                  type="text"
+                  x-model="address"
+                  placeholder="Jl. Sudirman No. 45"
+                  class="checkout-form-input"
+                  :class="{ 'error': errors.address }"
+                  autocomplete="street-address"
+                >
+                <p x-show="errors.address" x-text="errors.address" class="checkout-field-error" style="display:none;" role="alert"></p>
+              </div>
+
+              <!-- City + Province -->
+              <div class="checkout-form-row checkout-form-group">
+                <div>
+                  <label for="checkout-city" class="checkout-form-label">City *</label>
+                  <input
+                    id="checkout-city"
+                    type="text"
+                    x-model="city"
+                    placeholder="Jakarta"
+                    class="checkout-form-input"
+                    :class="{ 'error': errors.city }"
+                    autocomplete="address-level2"
+                  >
+                  <p x-show="errors.city" x-text="errors.city" class="checkout-field-error" style="display:none;" role="alert"></p>
+                </div>
+                <div>
+                  <label for="checkout-province" class="checkout-form-label">Province *</label>
+                  <input
+                    id="checkout-province"
+                    type="text"
+                    x-model="province"
+                    placeholder="DKI Jakarta"
+                    class="checkout-form-input"
+                    :class="{ 'error': errors.province }"
+                    autocomplete="address-level1"
+                  >
+                  <p x-show="errors.province" x-text="errors.province" class="checkout-field-error" style="display:none;" role="alert"></p>
+                </div>
+              </div>
+
+              <!-- Postal code + phone -->
+              <div class="checkout-form-row checkout-form-group">
+                <div>
+                  <label for="checkout-postal" class="checkout-form-label">Postal Code *</label>
+                  <input
+                    id="checkout-postal"
+                    type="text"
+                    x-model="postalCode"
+                    placeholder="10110"
+                    class="checkout-form-input"
+                    :class="{ 'error': errors.postalCode }"
+                    autocomplete="postal-code"
+                    inputmode="numeric"
+                  >
+                  <p x-show="errors.postalCode" x-text="errors.postalCode" class="checkout-field-error" style="display:none;" role="alert"></p>
+                </div>
+                <div>
+                  <label for="checkout-phone" class="checkout-form-label">Phone *</label>
+                  <input
+                    id="checkout-phone"
+                    type="tel"
+                    x-model="phone"
+                    placeholder="+62 812 3456 7890"
+                    class="checkout-form-input"
+                    :class="{ 'error': errors.phone }"
+                    autocomplete="tel"
+                    inputmode="tel"
+                  >
+                  <p x-show="errors.phone" x-text="errors.phone" class="checkout-field-error" style="display:none;" role="alert"></p>
+                </div>
+              </div>
+
+              <div class="checkout-nav-row" style="justify-content:flex-end;">
+                <button
+                  @click="nextStep()"
+                  class="checkout-place-order-btn"
+                  style="width:auto;padding:16px 48px;"
+                >Continue to Review</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Review -->
+          <div x-show="step === 2" style="display:none;" role="region" aria-label="Order review">
+            <div class="checkout-card">
+              <h2 class="checkout-card-title">Review Your Order</h2>
+
+              <!-- Items list (read-only) -->
+              <div style="margin-bottom:28px;">
+                <template x-for="item in $store.cart.items" :key="item.key">
+                  <div class="checkout-summary-item">
+                    <template x-if="item.image">
+                      <img :src="item.image" :alt="item.name" class="checkout-summary-thumb" loading="lazy">
+                    </template>
+                    <template x-if="!item.image">
+                      <div class="checkout-summary-thumb"></div>
+                    </template>
+                    <div style="flex:1;min-width:0;">
+                      <p class="checkout-summary-name" x-text="item.name"></p>
+                      <p class="checkout-summary-variant" x-text="[item.colour, item.size].filter(Boolean).join(' / ')"></p>
+                      <p style="font-size:12px;color:var(--text-muted);margin-top:4px;" x-text="'Qty: ' + item.qty"></p>
+                    </div>
+                    <p class="checkout-summary-price" x-text="'Rp ' + (item.price * item.qty).toLocaleString('id-ID')"></p>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Shipping address summary -->
+              <div style="background:var(--beige);border-radius:12px;padding:20px;margin-bottom:24px;">
+                <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Shipping To</p>
+                <p style="font-size:14px;color:var(--charcoal);font-weight:600;" x-text="firstName + ' ' + lastName"></p>
+                <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-top:4px;" x-text="address + ', ' + city + (province ? ', ' + province : '') + (postalCode ? ' ' + postalCode : '')"></p>
+                <p style="font-size:13px;color:var(--text-muted);margin-top:2px;" x-text="phone"></p>
+                <p x-show="!$store.auth.loggedIn" style="display:none;font-size:13px;color:var(--text-muted);margin-top:2px;" x-text="email"></p>
+              </div>
+
+              <div class="checkout-nav-row">
+                <button @click="prevStep()" class="btn-secondary" style="padding:14px 28px;">Back</button>
+                <button @click="nextStep()" class="checkout-place-order-btn" style="width:auto;padding:16px 48px;">Continue to Payment</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Payment (placeholder) -->
+          <div x-show="step === 3" style="display:none;" role="region" aria-label="Payment">
+            <div class="checkout-card">
+              <h2 class="checkout-card-title">Payment</h2>
+
+              <!-- Mock card visual -->
+              <div class="payment-card-mock">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                  <svg width="40" height="28" viewBox="0 0 40 28" fill="none" aria-hidden="true">
+                    <circle cx="14" cy="14" r="14" fill="rgba(255,255,255,0.2)"/>
+                    <circle cx="26" cy="14" r="14" fill="rgba(255,255,255,0.1)"/>
+                  </svg>
+                  <span style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.6);">ELVORA PAY</span>
+                </div>
+                <p class="payment-card-number" x-text="cardNumber || '•••• •••• •••• ••••'"></p>
+                <div class="payment-card-meta">
+                  <div><span>Name</span><br><span style="color:white;font-size:12px;margin-top:2px;display:block;" x-text="(firstName + ' ' + lastName).toUpperCase() || 'YOUR NAME'"></span></div>
+                  <div><span>Expires</span><br><span style="color:white;font-size:12px;margin-top:2px;display:block;">12/28</span></div>
+                </div>
+              </div>
+
+              <p class="payment-secure-note">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 9.74-7 11C8.5 21.74 5 17 5 12V6l7-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Secure payment powered by Elvora Pay
+              </p>
+
+              <!-- Payment form fields -->
+              <div class="checkout-form-group">
+                <label for="checkout-card-number" class="checkout-form-label">Card Number *</label>
+                <input id="checkout-card-number" type="text" x-model="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" class="checkout-form-input" aria-label="Card number" style="letter-spacing:2px;">
+              </div>
+              <div class="checkout-form-row checkout-form-group">
+                <div>
+                  <label for="checkout-expiry" class="checkout-form-label">Expiry *</label>
+                  <input id="checkout-expiry" type="text" x-model="expiry" placeholder="MM/YY" maxlength="5" class="checkout-form-input" aria-label="Expiry date">
+                </div>
+                <div>
+                  <label for="checkout-cvv" class="checkout-form-label">CVV *</label>
+                  <input id="checkout-cvv" type="text" x-model="cvv" placeholder="123" maxlength="4" class="checkout-form-input" aria-label="CVV">
+                </div>
+              </div>
+
+              <div class="checkout-nav-row">
+                <button @click="prevStep()" class="btn-secondary" style="padding:14px 28px;">Back</button>
+                <button
+                  @click="placeOrder()"
+                  :disabled="loading"
+                  class="checkout-place-order-btn"
+                  style="width:auto;padding:16px 48px;"
+                >
+                  <span x-show="!loading">Place Order</span>
+                  <span x-show="loading" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;" aria-hidden="true"><path d="M12 2a10 10 0 0 1 0 20" stroke-linecap="round"/></svg>
+                    Placing Order…
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Confirmation -->
+          <div x-show="step === 4" style="display:none;" role="region" aria-label="Order confirmation">
+            <div class="checkout-card" style="text-align:center;padding:56px 40px;">
+              <div class="checkout-confirm-icon" style="margin-bottom:24px;">
+                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--sage);" aria-hidden="true">
+                  <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+
+              <h2 style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--charcoal);margin-bottom:12px;">Order Confirmed!</h2>
+              <p style="font-size:14px;color:var(--text-muted);line-height:1.8;max-width:400px;margin:0 auto 24px;">
+                Thank you for your order. Your activewear is on its way.
+              </p>
+
+              <!-- Order ID display -->
+              <div style="background:var(--beige);border-radius:12px;padding:20px 28px;display:inline-block;margin-bottom:32px;">
+                <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Order Reference</p>
+                <p style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--charcoal);letter-spacing:2px;"
+                  x-text="'#' + (orderId ? orderId.slice(-8).toUpperCase() : '—')"
+                ></p>
+              </div>
+
+              <div style="margin-bottom:40px;">
+                <p style="font-size:13px;color:var(--text-muted);line-height:1.8;">
+                  A confirmation will be sent to
+                  <span x-show="$store.auth.loggedIn" style="display:none;font-weight:600;color:var(--charcoal);">your registered email</span>
+                  <span x-show="!$store.auth.loggedIn" style="display:none;font-weight:600;color:var(--charcoal);" x-text="email"></span>
+                </p>
+              </div>
+
+              <a href="/shop.html" class="btn-primary" style="margin-bottom:20px;display:inline-block;">Continue Shopping</a>
+
+              <!-- Guest upsell - non-blocking -->
+              <div x-show="!$store.auth.loggedIn" style="display:none;margin-top:24px;padding-top:24px;border-top:1px solid rgba(168,191,163,0.2);">
+                <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+                  Want to track your orders and save your wishlist?
+                </p>
+                <a href="/auth.html" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--charcoal);text-decoration:underline;text-underline-offset:3px;">Create an Account</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: order summary sidebar (steps 1-3 only) -->
+        <aside x-show="step < 4" style="display:none;" aria-label="Order summary">
+          <div class="order-summary" style="position:sticky;top:104px;">
+            <h2 class="order-summary-title">Your Bag</h2>
+
+            <!-- Mini items preview (first 3, then "+N more") -->
+            <div style="margin-bottom:20px;">
+              <template x-for="(item, i) in $store.cart.items.slice(0, 3)" :key="item.key">
+                <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(168,191,163,0.15);">
+                  <template x-if="item.image">
+                    <img :src="item.image" :alt="item.name" style="width:44px;height:54px;border-radius:8px;object-fit:cover;background:var(--sage-light);" loading="lazy">
+                  </template>
+                  <template x-if="!item.image">
+                    <div style="width:44px;height:54px;border-radius:8px;background:var(--sage-light);flex-shrink:0;"></div>
+                  </template>
+                  <div style="flex:1;min-width:0;">
+                    <p style="font-size:13px;font-weight:600;color:var(--charcoal);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="item.name"></p>
+                    <p style="font-size:11px;color:var(--text-muted);" x-text="'Qty: ' + item.qty"></p>
+                  </div>
+                  <p style="font-size:13px;font-weight:600;color:var(--charcoal);flex-shrink:0;" x-text="'Rp ' + (item.price * item.qty).toLocaleString('id-ID')"></p>
+                </div>
+              </template>
+              <p
+                x-show="$store.cart.items.length > 3"
+                style="display:none;font-size:12px;color:var(--text-muted);text-align:center;padding-top:10px;"
+                x-text="'+ ' + ($store.cart.items.length - 3) + ' more item' + ($store.cart.items.length - 3 !== 1 ? 's' : '')"
+              ></p>
+            </div>
+
+            <div class="order-summary-row">
+              <span>Subtotal</span>
+              <span x-text="$store.cart.totalFormatted"></span>
+            </div>
+            <div class="order-summary-row">
+              <span>Shipping</span>
+              <span style="color:var(--sage);font-size:12px;letter-spacing:1px;text-transform:uppercase;">Free</span>
+            </div>
+            <div class="order-summary-row total">
+              <span>Total</span>
+              <span x-text="$store.cart.totalFormatted"></span>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-root"></div>
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+  <script>
+  function checkoutData() {
+    return {
+      step: 1,
+      loading: false,
+      orderId: null,
+      errorMsg: '',
+
+      // Step 1 form fields
+      email: '',
+      firstName: '',
+      lastName: '',
+      address: '',
+      city: '',
+      province: '',
+      postalCode: '',
+      phone: '',
+      errors: {},
+      cardNumber: '',
+      expiry: '',
+      cvv: '',
+
+      // Step labels for indicator
+      stepLabels: ['Shipping', 'Review', 'Payment', 'Confirmation'],
+
+      init() {
+        const user = Alpine.store('auth')?.user;
+        if (user) {
+          this.firstName = user.user_metadata?.first_name || '';
+          this.lastName = user.user_metadata?.last_name || '';
+          // Do NOT prefill email — synthetic @elvora.local email is not suitable for guest_email
+          // Authenticated users do not need email at checkout
+        }
+      },
+
+      validateStep1() {
+        this.errors = {};
+        const user = Alpine.store('auth')?.user;
+        // Email required only for guests
+        if (!user && (!this.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email))) {
+          this.errors.email = 'Valid email required';
+        }
+        if (!this.firstName.trim()) this.errors.firstName = 'First name required';
+        if (!this.lastName.trim()) this.errors.lastName = 'Last name required';
+        if (!this.address.trim()) this.errors.address = 'Address required';
+        if (!this.city.trim()) this.errors.city = 'City required';
+        if (!this.province.trim()) this.errors.province = 'Province required';
+        if (!this.postalCode.trim()) this.errors.postalCode = 'Postal code required';
+        if (!this.phone.trim()) this.errors.phone = 'Phone number required';
+        return Object.keys(this.errors).length === 0;
+      },
+
+      validatePayment() {
+        if (!this.cardNumber.trim()) { this.errorMsg = 'Please enter a card number.'; return false; }
+        if (!this.expiry.trim()) { this.errorMsg = 'Please enter the expiry date.'; return false; }
+        if (!this.cvv.trim()) { this.errorMsg = 'Please enter the CVV.'; return false; }
+        this.errorMsg = '';
+        return true;
+      },
+
+      nextStep() {
+        if (this.step === 1 && !this.validateStep1()) return;
+        if (this.step < 3) {
+          this.step++;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      },
+
+      prevStep() {
+        if (this.step > 1 && this.step < 4) {
+          this.step--;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      },
+
+      async placeOrder() {
+        if (!this.validatePayment()) return;
+        this.loading = true;
+        this.errorMsg = '';
+
+        try {
+          const { data: { user } } = await window.supabase.auth.getUser();
+          const cartItems = Alpine.store('cart').items;
+          const subtotal = Alpine.store('cart').total;
+
+          if (!cartItems || cartItems.length === 0) {
+            this.errorMsg = 'Your bag is empty. Please add items before placing an order.';
+            this.loading = false; return;
+          }
+          const missingSizes = cartItems.filter(i => !i.size || !i.variantId);
+          if (missingSizes.length > 0) {
+            this.errorMsg = 'Semua produk harus memiliki ukuran yang dipilih. Kembali ke halaman produk untuk memilih ukuran.';
+            this.loading = false;
+            return;
+          }
+
+          // Build order payload — guest vs authenticated
+          const orderPayload = {
+            status: 'confirmed',
+            subtotal: subtotal,
+            shipping_address: {
+              firstName: this.firstName,
+              lastName: this.lastName,
+              address: this.address,
+              city: this.city,
+              province: this.province,
+              postalCode: this.postalCode,
+              phone: this.phone
+            }
+          };
+
+          if (user) {
+            // Authenticated: set user_id, omit guest_email
+            orderPayload.user_id = user.id;
+          } else {
+            // Guest: explicitly null user_id + real email (NEVER synthetic @elvora.local)
+            orderPayload.user_id = null;
+            orderPayload.guest_email = this.email;
+          }
+
+          // Insert order — must come first due to FK constraint on order_items.order_id
+          const { data: order, error: orderErr } = await window.supabase
+            .from('orders')
+            .insert(orderPayload)
+            .select('id')
+            .single();
+
+          if (orderErr) throw orderErr;
+
+          // Build order_items — snapshot product_name, variant_label, unit_price
+          const lineItems = cartItems.map(item => ({
+            order_id: order.id,
+            product_id: item.productId,
+            variant_id: item.variantId || null,
+            product_name: item.name,
+            variant_label: [item.colour, item.size].filter(Boolean).join(' / ') || null,
+            unit_price: item.price,
+            quantity: item.qty
+          }));
+
+          const { error: itemsErr } = await window.supabase
+            .from('order_items')
+            .insert(lineItems);
+
+          if (itemsErr) throw itemsErr;
+
+          // Store order ID before clearing cart
+          this.orderId = order.id;
+
+          // Clear cart from Alpine store + localStorage
+          Alpine.store('cart').clear();
+
+          // If authenticated, also clear Supabase cart_items
+          if (user) {
+            await window.supabase
+              .from('cart_items')
+              .delete()
+              .eq('user_id', user.id);
+          }
+
+          // Advance to confirmation step
+          this.step = 4;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        } catch (err) {
+          console.error('[checkout] placeOrder error:', err);
+          this.errorMsg = 'Something went wrong placing your order. Please try again.';
+        } finally {
+          this.loading = false;
+        }
+      }
+    };
+  }
+  </script>
+</body>
+</html>

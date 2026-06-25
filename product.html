@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main x-data="{
+    product: null,
+    loading: true,
+    selectedColour: null,
+    selectedSize: null,
+    showSizeGuide: false,
+    stickyVisible: false,
+    accordionFabric: false,
+    accordionCare: false,
+    _mainSwiper: null,
+    pairings: [],
+    relatedProducts: [],
+    reviews: [],
+    reviewsOffset: 0,
+    reviewsPageSize: 5,
+    reviewsTotal: 0,
+    allReviewsLoaded: false,
+    reviewsLoading: false,
+    averageRating: '0.0',
+    totalReviewCount: 0,
+    wishlistedIds: new Set(),
+
+    async initWishlist() {
+      const { data: { user } } = await window.supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await window.supabase
+        .from('wishlist_items')
+        .select('product_id')
+        .eq('user_id', user.id);
+      this.wishlistedIds = new Set((data || []).map(r => r.product_id));
+    },
+
+    async toggleWishlist(productId) {
+      const { data: { user } } = await window.supabase.auth.getUser();
+      if (!user) {
+        Toastify({
+          text: 'Sign in to save items to your wishlist',
+          duration: 3000,
+          gravity: 'bottom', position: 'right',
+          style: { background: 'var(--charcoal)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' },
+          onClick() { window.location.href = '/auth.html?tab=signin'; }
+        }).showToast();
+        setTimeout(() => { window.location.href = '/auth.html?tab=signin'; }, 2000);
+        return;
+      }
+      const wasWishlisted = this.wishlistedIds.has(productId);
+      if (wasWishlisted) {
+        this.wishlistedIds = new Set([...this.wishlistedIds].filter(id => id !== productId));
+        const { error } = await window.supabase.from('wishlist_items').delete().eq('user_id', user.id).eq('product_id', productId);
+        if (error) {
+          this.wishlistedIds = new Set([...this.wishlistedIds, productId]);
+          Toastify({ text: `Couldn't save item — try again`, duration: 3000, gravity: 'bottom', position: 'right',
+            style: { background: 'var(--rose)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' } }).showToast();
+        }
+      } else {
+        this.wishlistedIds = new Set([...this.wishlistedIds, productId]);
+        const { error } = await window.supabase.from('wishlist_items').insert({ user_id: user.id, product_id: productId });
+        if (error) {
+          this.wishlistedIds = new Set([...this.wishlistedIds].filter(id => id !== productId));
+          Toastify({ text: `Couldn't save item — try again`, duration: 3000, gravity: 'bottom', position: 'right',
+            style: { background: 'var(--rose)', color: '#fff', borderRadius: '50px', fontSize: '12px', letterSpacing: '2px' } }).showToast();
+        }
+      }
+    },
+
+    async init() {
+      const run = async () => {
+        const slug = new URLSearchParams(window.location.search).get('slug');
+        if (!slug) { window.location.href = '/shop.html'; return; }
+
+        const data = await window.getProduct(slug);
+        if (!data) { window.location.href = '/shop.html'; return; }
+
+        this.product = data;
+        this.selectedColour = data.product_variants?.[0]?.colour || null;
+
+        this.$nextTick(() => {
+          this.initSwiper();
+          this.initStickyObserver();
+        });
+
+        this.loading = false;
+
+        await Promise.all([
+          this.loadAggregateRating(),
+          this.loadPairings(),
+          this.loadRelated(),
+          this.loadReviews(),
+        ]);
+        await this.initWishlist();
+      };
+      if (window.getProduct) { run(); }
+      else { window.addEventListener('elvora:ready', run, { once: true }); }
+    },
+
+    async loadAggregateRating() {
+      const { data } = await window.supabase
+        .from('reviews')
+        .select('rating')
+        .eq('product_id', this.product.id);
+      const ratings = (data || []).map(r => r.rating);
+      this.totalReviewCount = ratings.length;
+      this.averageRating = ratings.length
+        ? (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1)
+        : '0.0';
+    },
+
+    async loadPairings() {
+      const { data } = await window.supabase
+        .from('product_pairings')
+        .select('paired_product_id, display_order, products!product_pairings_paired_product_id_fkey(id, name, slug, base_price, product_images(url, alt_text, display_order, colour))')
+        .eq('product_id', this.product.id)
+        .order('display_order')
+        .limit(3);
+      this.pairings = (data || []).map(row => ({
+        id: row.paired_product_id,
+        name: row.products?.name,
+        slug: row.products?.slug,
+        base_price: row.products?.base_price,
+        image: row.products?.product_images?.[0]?.url,
+        image_alt: row.products?.product_images?.[0]?.alt_text || row.products?.name,
+      }));
+    },
+
+    async loadRelated() {
+      const { data } = await window.supabase
+        .from('products')
+        .select('id, name, slug, base_price, product_images(url, alt_text, display_order, colour), product_variants(colour, colour_hex)')
+        .eq('category_id', this.product.category_id)
+        .eq('is_active', true)
+        .neq('id', this.product.id)
+        .limit(4);
+      this.relatedProducts = (data || []).map(p => {
+        const seen = new Set();
+        const uniqueColours = (p.product_variants || []).filter(v => {
+          if (seen.has(v.colour)) return false;
+          seen.add(v.colour);
+          return true;
+        });
+        return { ...p, uniqueColours };
+      });
+    },
+
+    async loadReviews() {
+      this.reviewsLoading = true;
+      const { data, count } = await window.supabase
+        .from('reviews')
+        .select('id, reviewer_name, rating, review_text, fit_feedback, created_at', { count: 'exact' })
+        .eq('product_id', this.product.id)
+        .order('created_at', { ascending: false })
+        .range(this.reviewsOffset, this.reviewsOffset + this.reviewsPageSize - 1);
+      this.reviews = [...this.reviews, ...(data || [])];
+      this.reviewsOffset += this.reviewsPageSize;
+      if (count !== null) this.reviewsTotal = count;
+      this.allReviewsLoaded = this.reviews.length >= (this.reviewsTotal || this.totalReviewCount);
+      this.reviewsLoading = false;
+    },
+
+    initSwiper() {
+      const thumbsSwiper = new Swiper('.swiper-thumbs', {
+        spaceBetween: 8,
+        slidesPerView: 4,
+        freeMode: true,
+        watchSlidesProgress: true,
+      });
+      this._mainSwiper = new Swiper('.swiper-main', {
+        spaceBetween: 0,
+        loop: false,
+        thumbs: { swiper: thumbsSwiper },
+        lazy: { loadPrevNext: true },
+      });
+    },
+
+    initStickyObserver() {
+      const btn = document.querySelector('.atc-main');
+      if (!btn) return;
+      new IntersectionObserver(([e]) => {
+        this.stickyVisible = !e.isIntersecting;
+      }, { threshold: 0 }).observe(btn);
+    },
+
+    openSizeGuide() {
+      this.showSizeGuide = true;
+      this.$nextTick(() => {
+        const m = document.querySelector('.size-guide-modal');
+        const first = m?.querySelector('button, [href], input');
+        if (first) first.focus();
+      });
+    },
+
+    closeSizeGuide() {
+      this.showSizeGuide = false;
+      document.querySelector('.size-guide-btn')?.focus();
+    },
+
+    trapFocus(e) {
+      if (!this.showSizeGuide) return;
+      const modal = document.querySelector('.size-guide-modal');
+      if (!modal) return;
+      const focusable = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex=&quot;-1&quot;])');
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.key === 'Tab') {
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+      if (e.key === 'Escape') this.closeSizeGuide();
+    },
+
+    addToBag() {
+      if (!this.selectedSize) { alert('Please select a size'); return; }
+      const variant = (this.product.product_variants || []).find(
+        v => v.colour === this.selectedColour && v.size === this.selectedSize
+      );
+      const images = [...(this.product.product_images || [])].sort((a, b) => a.display_order - b.display_order);
+      const image = images[0]?.url || '';
+      Alpine.store('cart').add({
+        productId: this.product.id,
+        variantId: variant?.id || null,
+        name: this.product.name,
+        slug: this.product.slug,
+        colour: this.selectedColour,
+        size: this.selectedSize,
+        price: this.product.base_price,
+        image,
+      });
+      Alpine.store('cart').openDrawer();
+    },
+
+    selectColour(colour) {
+      this.selectedColour = colour;
+      if (!this.product?.product_images || !this._mainSwiper) return;
+      const images = this.product.product_images;
+      const idx = images.findIndex(img => img.colour === colour);
+      if (idx >= 0) this._mainSwiper.slideTo(idx);
+    },
+
+    get uniqueColours() {
+      if (!this.product?.product_variants) return [];
+      const seen = new Set();
+      return this.product.product_variants.filter(v => {
+        if (seen.has(v.colour)) return false;
+        seen.add(v.colour);
+        return true;
+      });
+    },
+
+    get uniqueSizes() {
+      if (!this.product?.product_variants) return [];
+      const seen = new Set();
+      return this.product.product_variants.filter(v => {
+        if (seen.has(v.size)) return false;
+        seen.add(v.size);
+        return true;
+      });
+    }
+  }">
+
+    <!-- Loading skeleton -->
+    <div x-show="loading" class="flex items-center justify-center min-h-screen">
+      <div class="skeleton-shimmer" style="width:100%;height:400px"></div>
+    </div>
+
+    <!-- Product content -->
+    <!-- Back button -->
+    <div x-show="!loading && product" class="max-w-7xl mx-auto px-6 lg:px-16 pt-8 pb-0">
+      <button onclick="history.length > 1 ? history.back() : (window.location.href='/shop.html')"
+        style="display:inline-flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;letter-spacing:0.08em;color:var(--text-muted);padding:0;text-transform:uppercase;"
+        aria-label="Go back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back
+      </button>
+    </div>
+
+    <div x-show="!loading && product" class="max-w-7xl mx-auto px-6 lg:px-16 py-12 lg:grid lg:grid-cols-2 lg:gap-16">
+
+      <!-- LEFT COLUMN — Gallery -->
+      <div>
+        <!-- Main Swiper -->
+        <div class="swiper swiper-main" style="aspect-ratio:3/4;">
+          <div class="swiper-wrapper">
+            <template x-for="(img, i) in (product?.product_images || [])" :key="img.id">
+              <div class="swiper-slide">
+                <img
+                  :src="img.url + '?w=1200&q=80'"
+                  :alt="product.name + ' — image ' + (i + 1) + ' of ' + product.product_images.length"
+                  width="800" height="1067"
+                  :loading="i === 0 ? 'eager' : 'lazy'"
+                  :fetchpriority="i === 0 ? 'high' : 'auto'"
+                  class="w-full h-full object-cover"
+                >
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Thumbnail Swiper -->
+        <div class="swiper swiper-thumbs mt-3">
+          <div class="swiper-wrapper">
+            <template x-for="(img, i) in (product?.product_images || [])" :key="'thumb-' + img.id">
+              <div class="swiper-slide" style="height:80px;">
+                <img
+                  :src="img.url + '?w=200&q=60'"
+                  :alt="'View image ' + (i + 1)"
+                  width="200" height="267"
+                  loading="lazy"
+                  class="w-full h-full object-cover"
+                >
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN — Product info -->
+      <div class="mt-8 lg:mt-0">
+
+        <!-- Name & Price -->
+        <p
+          x-text="product?.categories?.name"
+          class="text-[11px] font-medium tracking-widest uppercase text-[#8A8A8A] mb-2"
+        ></p>
+        <h1
+          x-text="product?.name"
+          class="font-display text-charcoal mb-2 leading-tight"
+          style="font-size: clamp(22px, 3vw, 28px);"
+        ></h1>
+        <p
+          x-text="'Rp ' + Number(product?.base_price).toLocaleString('id-ID')"
+          class="text-[15px] font-semibold text-charcoal mb-6"
+        ></p>
+
+        <!-- Colour Selector -->
+        <div class="mb-6" x-show="uniqueColours.length > 0">
+          <p class="text-[11px] font-medium tracking-widest uppercase text-[#8A8A8A] mb-3">
+            Colour — <span x-text="selectedColour" class="text-charcoal normal-case tracking-normal"></span>
+          </p>
+          <div class="flex gap-3 flex-wrap" role="group" aria-label="Select colour">
+            <template x-for="v in uniqueColours" :key="v.colour">
+              <button
+                class="pdp-swatch"
+                :class="selectedColour === v.colour ? 'active' : ''"
+                :style="'background-color:' + v.colour_hex"
+                :aria-label="v.colour"
+                :aria-pressed="selectedColour === v.colour"
+                @click="selectColour(v.colour)"
+              ></button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Size Selector -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-[11px] font-medium tracking-widest uppercase text-[#8A8A8A]">Size</p>
+            <button
+              class="size-guide-btn view-all text-[12px]"
+              @click="openSizeGuide()"
+              aria-label="Open size guide"
+            >Size Guide</button>
+          </div>
+          <div class="size-grid" role="group" aria-label="Select size">
+            <template x-for="v in uniqueSizes" :key="v.size">
+              <button
+                class="size-btn"
+                :class="selectedSize === v.size ? 'selected' : ''"
+                :aria-label="'Size ' + v.size"
+                :aria-pressed="selectedSize === v.size"
+                :disabled="v.stock_quantity === 0"
+                :aria-disabled="v.stock_quantity === 0"
+                @click="v.stock_quantity > 0 && (selectedSize = v.size)"
+                x-text="v.size"
+              ></button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Main ATC Button -->
+        <button
+          class="atc-main w-full mt-4"
+          :disabled="!selectedSize"
+          :aria-disabled="!selectedSize"
+          :aria-label="selectedSize ? 'Add ' + product.name + ' to bag' : 'Select a size first'"
+          @click="addToBag()"
+        >
+          <span x-text="selectedSize ? 'Add to Bag' : 'Select a Size'"></span>
+        </button>
+
+        <!-- Wishlist Button (PDP) -->
+        <button
+          class="wishlist-btn"
+          :class="{ 'active': wishlistedIds.has(product?.id) }"
+          @click.prevent="toggleWishlist(product?.id)"
+          :aria-label="wishlistedIds.has(product?.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+          :aria-pressed="wishlistedIds.has(product?.id)"
+          style="width:100%;margin-top:12px;border-radius:50px;padding:12px 24px;display:flex;align-items:center;justify-content:center;gap:8px;"
+        ><span x-text="wishlistedIds.has(product?.id) ? '♥' : '♡'"></span><span x-text="wishlistedIds.has(product?.id) ? 'Saved' : 'Save to Wishlist'"></span></button>
+
+        <!-- Fabric & Care Accordion -->
+        <div class="mt-10">
+          <!-- Materials accordion -->
+          <div class="accordion-item">
+            <button
+              class="accordion-trigger"
+              @click="accordionFabric = !accordionFabric"
+              :aria-expanded="accordionFabric"
+              aria-controls="accordion-fabric-body"
+            >
+              <span>Materials</span>
+              <span class="text-[#8A8A8A] text-lg" x-text="accordionFabric ? '−' : '+'"></span>
+            </button>
+            <div
+              id="accordion-fabric-body"
+              class="accordion-body"
+              x-show="accordionFabric"
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-150"
+              x-transition:leave-start="opacity-100 translate-y-0"
+              x-transition:leave-end="opacity-0 -translate-y-2"
+              role="region"
+              style="display:none;"
+              x-text="product?.fabric_details || 'Product details coming soon.'"
+            ></div>
+          </div>
+
+          <!-- Care Instructions accordion -->
+          <div class="accordion-item">
+            <button
+              class="accordion-trigger"
+              @click="accordionCare = !accordionCare"
+              :aria-expanded="accordionCare"
+              aria-controls="accordion-care-body"
+            >
+              <span>Care Instructions</span>
+              <span class="text-[#8A8A8A] text-lg" x-text="accordionCare ? '−' : '+'"></span>
+            </button>
+            <div
+              id="accordion-care-body"
+              class="accordion-body"
+              x-show="accordionCare"
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-150"
+              x-transition:leave-start="opacity-100 translate-y-0"
+              x-transition:leave-end="opacity-0 -translate-y-2"
+              role="region"
+              style="display:none;"
+              x-text="product?.care_instructions || 'Care instructions coming soon.'"
+            ></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COMPLETE THE LOOK -->
+    <section
+      class="max-w-7xl mx-auto px-6 lg:px-16 py-12 border-t border-sage/20"
+      x-show="pairings.length > 0"
+      style="display:none;"
+    >
+      <p class="section-label">Style It With</p>
+      <h2 class="font-display text-2xl text-charcoal mb-8">Complete the Look</h2>
+      <div class="look-grid">
+        <template x-for="pair in pairings" :key="pair.id">
+          <a :href="'/product.html?slug=' + pair.slug" class="look-card">
+            <div style="aspect-ratio:3/4;overflow:hidden;">
+              <img
+                :src="pair.image ? pair.image + '?w=600&q=80' : ''"
+                :alt="pair.image_alt"
+                width="600" height="800"
+                loading="lazy"
+                class="w-full h-full object-cover"
+              >
+            </div>
+            <div class="product-info" style="padding:16px;">
+              <p x-text="pair.name" class="product-name" style="font-size:15px;"></p>
+              <p x-text="'$' + Number(pair.base_price).toFixed(2)" class="product-price" style="margin-top:4px;"></p>
+            </div>
+          </a>
+        </template>
+      </div>
+    </section>
+
+    <!-- YOU MIGHT ALSO LOVE -->
+    <section
+      class="max-w-7xl mx-auto px-6 lg:px-16 py-12 border-t border-sage/20"
+      x-show="relatedProducts.length > 0"
+      style="display:none;"
+    >
+      <p class="section-label">Discover More</p>
+      <h2 class="font-display text-2xl text-charcoal mb-8">You Might Also Love</h2>
+      <div class="related-grid">
+        <template x-for="p in relatedProducts" :key="p.id">
+          <a :href="'/product.html?slug=' + p.slug" class="product-card">
+            <div class="product-img">
+              <img
+                :src="(p.product_images?.[0]?.url || '') + '?w=800&q=80'"
+                :alt="p.product_images?.[0]?.alt_text || p.name"
+                width="400" height="533"
+                loading="lazy"
+                class="w-full h-full object-cover object-top"
+              >
+              <button
+                class="wishlist-btn"
+                type="button"
+                :class="{ 'active': wishlistedIds.has(p.id) }"
+                @click.prevent.stop="toggleWishlist(p.id)"
+                :aria-label="wishlistedIds.has(p.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+                :aria-pressed="wishlistedIds.has(p.id)"
+              ><span x-text="wishlistedIds.has(p.id) ? '♥' : '♡'"></span></button>
+            </div>
+            <div class="product-info">
+              <h3 x-text="p.name" class="product-name"></h3>
+              <div class="product-price-row">
+                <span x-text="'$' + Number(p.base_price).toFixed(2)" class="product-price"></span>
+              </div>
+              <div class="product-swatches">
+                <template x-for="v in p.uniqueColours" :key="v.colour">
+                  <span class="swatch" :style="'background-color:' + v.colour_hex" :aria-label="v.colour"></span>
+                </template>
+              </div>
+            </div>
+          </a>
+        </template>
+      </div>
+    </section>
+
+    <!-- WHAT OUR COMMUNITY SAYS -->
+    <section class="max-w-7xl mx-auto px-6 lg:px-16 py-12 border-t border-sage/20">
+      <p class="section-label">Community</p>
+      <h2 class="font-display text-2xl text-charcoal mb-8">What Our Community Says</h2>
+
+      <!-- Aggregate rating -->
+      <div class="review-summary">
+        <div>
+          <p x-text="averageRating" class="review-rating-number"></p>
+        </div>
+        <div>
+          <div class="review-stars">
+            <template x-for="i in [1,2,3,4,5]" :key="i">
+              <span class="star" :class="i <= Math.round(Number(averageRating)) ? 'filled' : 'empty'">★</span>
+            </template>
+          </div>
+          <p x-text="totalReviewCount + ' Reviews'" class="review-count"></p>
+        </div>
+      </div>
+
+      <!-- Review list -->
+      <div>
+        <template x-for="r in reviews" :key="r.id">
+          <div class="review-card">
+            <div class="review-header">
+              <div>
+                <p x-text="r.reviewer_name" class="reviewer-name"></p>
+                <p x-text="new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })" class="review-date"></p>
+              </div>
+              <div>
+                <div class="review-stars">
+                  <template x-for="i in [1,2,3,4,5]" :key="i">
+                    <span class="star" :class="i <= r.rating ? 'filled' : 'empty'">★</span>
+                  </template>
+                </div>
+                <span
+                  class="fit-badge"
+                  :class="r.fit_feedback === 'runs_small' ? 'runs-small' : r.fit_feedback === 'runs_large' ? 'runs-large' : 'true-to-size'"
+                  x-text="r.fit_feedback === 'runs_small' ? 'Runs Small' : r.fit_feedback === 'runs_large' ? 'Runs Large' : 'True to Size'"
+                ></span>
+              </div>
+            </div>
+            <p x-text="r.review_text" class="review-text"></p>
+          </div>
+        </template>
+      </div>
+
+      <!-- Loading indicator -->
+      <p x-show="reviewsLoading" class="text-center text-sm py-4" style="color:var(--text-muted);display:none;">Loading reviews…</p>
+
+      <!-- Load More -->
+      <button
+        class="reviews-load-more"
+        x-show="!allReviewsLoaded && !reviewsLoading"
+        @click="loadReviews()"
+        style="display:none;"
+      >Load More Reviews</button>
+    </section>
+
+    <!-- STICKY ATC BAR -->
+    <div
+      class="sticky-atc"
+      x-show="stickyVisible"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0 translate-y-full"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100 translate-y-0"
+      x-transition:leave-end="opacity-0 translate-y-full"
+      style="display:none;"
+      :aria-hidden="!stickyVisible"
+    >
+      <div class="flex-1 min-w-0">
+        <p class="sticky-atc-name" x-text="product?.name"></p>
+        <p class="sticky-atc-meta" x-text="(selectedColour || '—') + ' · ' + (selectedSize || 'No size selected')"></p>
+      </div>
+      <span class="sticky-atc-price" x-text="'$' + Number(product?.base_price).toFixed(2)"></span>
+      <button
+        class="atc-main"
+        style="min-width:140px;"
+        :disabled="!selectedSize"
+        @click="addToBag()"
+        aria-label="Add to bag"
+      >Add to Bag</button>
+    </div>
+
+    <!-- SIZE GUIDE MODAL -->
+    <div
+      class="size-guide-overlay"
+      x-show="showSizeGuide"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      style="display:none;"
+      @click.self="closeSizeGuide()"
+      @keydown.window="trapFocus($event)"
+    >
+      <div
+        class="size-guide-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="size-guide-title"
+      >
+        <!-- Close button -->
+        <button
+          class="size-guide-close"
+          @click="closeSizeGuide()"
+          aria-label="Close size guide"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <!-- Title -->
+        <h2 id="size-guide-title" class="font-display text-charcoal mb-1" style="font-size:22px;">Size Guide</h2>
+        <p class="text-[13px] text-[#8A8A8A] mb-2">All measurements in centimetres (cm)</p>
+
+        <!-- Size table -->
+        <table class="size-table">
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              <th scope="col">Bust</th>
+              <th scope="col">Waist</th>
+              <th scope="col">Hips</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>XS</td><td>82–85</td><td>62–65</td><td>88–91</td></tr>
+            <tr><td>S</td><td>86–89</td><td>66–69</td><td>92–95</td></tr>
+            <tr><td>M</td><td>90–93</td><td>70–73</td><td>96–99</td></tr>
+            <tr><td>L</td><td>94–97</td><td>74–77</td><td>100–103</td></tr>
+            <tr><td>XL</td><td>98–101</td><td>78–81</td><td>104–107</td></tr>
+          </tbody>
+        </table>
+
+        <!-- How to measure -->
+        <div class="mt-6">
+          <h3 class="font-display text-charcoal mb-3" style="font-size:16px;">How to Measure</h3>
+          <p class="text-[14px] text-[#8A8A8A] leading-relaxed">
+            Bust: measure around the fullest part of your chest. Waist: measure around your natural waistline. Hips: measure around the widest part of your hips.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="footer-root"></div>
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/products.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+</body>
+</html>
