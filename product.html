@@ -497,7 +497,7 @@
             </div>
             <div class="product-info" style="padding:16px;">
               <p x-text="pair.name" class="product-name" style="font-size:15px;"></p>
-              <p x-text="'$' + Number(pair.base_price).toFixed(2)" class="product-price" style="margin-top:4px;"></p>
+              <p x-text="'Rp' + Number(pair.base_price).toFixed(2)" class="product-price" style="margin-top:4px;"></p>
             </div>
           </a>
         </template>
@@ -535,7 +535,7 @@
             <div class="product-info">
               <h3 x-text="p.name" class="product-name"></h3>
               <div class="product-price-row">
-                <span x-text="'$' + Number(p.base_price).toFixed(2)" class="product-price"></span>
+                <span x-text="'Rp' + Number(p.base_price).toFixed(2)" class="product-price"></span>
               </div>
               <div class="product-swatches">
                 <template x-for="v in p.uniqueColours" :key="v.colour">
@@ -624,7 +624,7 @@
         <p class="sticky-atc-name" x-text="product?.name"></p>
         <p class="sticky-atc-meta" x-text="(selectedColour || '—') + ' · ' + (selectedSize || 'No size selected')"></p>
       </div>
-      <span class="sticky-atc-price" x-text="'$' + Number(product?.base_price).toFixed(2)"></span>
+      <span class="sticky-atc-price" x-text="'Rp' + Number(product?.base_price).toFixed(2)"></span>
       <button
         class="atc-main"
         style="min-width:140px;"

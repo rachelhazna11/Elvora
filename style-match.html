@@ -1193,18 +1193,38 @@
             recommendations.flatMap(r => r.product_ids ?? [])
           )];
 
-          // Query products table in one request
+          // Query products and product_images as two plain queries (not an
+          // embedded select) — embedded selects depend on PostgREST having the
+          // product_images → products FK in its schema cache, which silently
+          // returns an error if that cache hasn't been reloaded after migration.
           let productMap = {};
+          let imagesByProduct = {};
           if (allIds.length > 0 && window.supabase) {
             try {
-              const { data: products, error } = await window.supabase
-                .from('products')
-                .select('id, name, slug, base_price, product_images(url, display_order)')
-                .in('id', allIds)
-                .order('display_order', { referencedTable: 'product_images' });
+              const [{ data: products, error: productsErr }, { data: images, error: imagesErr }] = await Promise.all([
+                window.supabase
+                  .from('products')
+                  .select('id, name, slug, base_price')
+                  .in('id', allIds),
+                window.supabase
+                  .from('product_images')
+                  .select('product_id, url, display_order')
+                  .in('product_id', allIds)
+                  .order('display_order', { ascending: true }),
+              ]);
 
-              if (!error && products) {
+              if (productsErr) console.error('Failed to fetch products for style match:', productsErr.message ?? productsErr);
+              if (imagesErr) console.error('Failed to fetch product images for style match:', imagesErr.message ?? imagesErr);
+
+              if (!productsErr && products) {
                 productMap = Object.fromEntries(products.map(p => [p.id, p]));
+              }
+              if (!imagesErr && images) {
+                imagesByProduct = images.reduce((acc, img) => {
+                  if (!acc[img.product_id]) acc[img.product_id] = [];
+                  acc[img.product_id].push(img);
+                  return acc;
+                }, {});
               }
             } catch (e) {
               console.error('Failed to fetch product details:', e);
@@ -1225,7 +1245,7 @@
                 slug: p.slug,
                 price: p.base_price,
                 image_url: (() => {
-                  const raw = p.product_images?.[0]?.url ?? null;
+                  const raw = imagesByProduct[p.id]?.[0]?.url ?? null;
                   if (!raw) return null;
                   // bare photo ID → full Unsplash CDN URL; full URL → strip existing params
                   return raw.startsWith('http') ? raw.split('?')[0] : `https://images.unsplash.com/${raw}`;
