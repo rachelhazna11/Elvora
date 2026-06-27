@@ -243,25 +243,25 @@ function _mockResult() {
   return {
     recommendations: [
       {
-        name: 'Sage Studio Set',
-        product_ids: ['c1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000006'],
-        colour_guidance: 'Earthy tones complement your natural colouring — lean into sage and ivory.',
-        why_it_works: 'The relaxed fit and muted palette align with your preference for minimal activewear.',
+        name: 'Court Ready Set',
+        product_ids: ['c2000000-0000-0000-0000-000000000004', 'c2000000-0000-0000-0000-000000000002'],
+        colour_guidance: 'Earthy, muted tones complement your natural colouring — lean into sage and ivory.',
+        why_it_works: 'The relaxed crop tee and supportive racerback bra align with your preference for versatile activewear.',
       },
       {
-        name: 'Court Ready Look',
-        product_ids: ['c1000000-0000-0000-0000-000000000010', 'c1000000-0000-0000-0000-000000000009'],
-        colour_guidance: 'Classic monochrome anchors your look with effortless confidence.',
-        why_it_works: 'Your preference for structured fits makes this pairing ideal for padel or tennis.',
+        name: 'Pace Setter Look',
+        product_ids: ['c2000000-0000-0000-0000-000000000010', 'c2000000-0000-0000-0000-000000000006'],
+        colour_guidance: 'Cool, fresh tones anchor your look with effortless confidence.',
+        why_it_works: 'Your preference for structured, technical fits makes this pairing ideal for running or court sports.',
       },
       {
-        name: 'Ivory Editorial Set',
-        product_ids: ['c1000000-0000-0000-0000-000000000020', 'c1000000-0000-0000-0000-000000000017'],
+        name: 'Editorial Court Dress',
+        product_ids: ['c2000000-0000-0000-0000-000000000013'],
         colour_guidance: 'Cream and white tones highlight your warm undertones beautifully.',
         why_it_works: 'An editorial edge that matches your stated aesthetic — elevated and wearable.',
       },
     ],
-    colour_guidance: 'Your palette suits warm neutrals — sage, ivory, camel — with slate blue for contrast.',
+    colour_guidance: 'Your palette suits warm neutrals — sage, ivory, blush — with navy for contrast.',
   };
 }
 

@@ -98,7 +98,10 @@ serve(async (req) => {
   // ─── NVIDIA NIM (MiniMax-M3) API call — OpenAI-compatible ──────────────────
   const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
 
-  // Catalog context: 22 hero products with real Supabase UUIDs (D-02)
+  // Catalog context: live ELVORA catalog (15 products) — must stay in sync
+  // with the actual `products` table. Keeping this hardcoded list out of
+  // sync with the database means every recommended product_id fails to
+  // resolve to a real row (caused a full outage of product images previously).
   const CATALOG_CONTEXT = `
 You are Elvy, the premium personal stylist for ELVORA activewear. Your goal is to make the
 user feel confident and understood. Use a sophisticated yet encouraging tone. Reference their
@@ -110,30 +113,23 @@ The user's style preferences:
 - Aesthetic: ${body.preferences?.aesthetic ?? "minimal"}
 - Colour preference: ${body.preferences?.colour ?? "neutral"}
 
-ELVORA CATALOG (22 products — use ONLY these product_ids in your recommendations):
+ELVORA CATALOG (15 products — use ONLY these product_ids in your recommendations):
 [
-  {"id":"c1000000-0000-0000-0000-000000000001","name":"Serenity Ribbed Legging","category":"leggings","tags":["studio","athleisure","versatile"],"colours":["sage","chalk"],"price":85},
-  {"id":"c1000000-0000-0000-0000-000000000002","name":"Aerial High-Rise Legging","category":"leggings","tags":["training","gym","high-impact"],"colours":["multiple"],"price":89},
-  {"id":"c1000000-0000-0000-0000-000000000003","name":"Studio 7/8 Legging","category":"leggings","tags":["pilates","barre","yoga","cropped"],"colours":["multiple"],"price":79},
-  {"id":"c1000000-0000-0000-0000-000000000004","name":"Flow Seamless Legging","category":"leggings","tags":["yoga","pilates","seamless","technical"],"colours":["multiple"],"price":95},
-  {"id":"c1000000-0000-0000-0000-000000000005","name":"Contour Pocket Legging","category":"leggings","tags":["running","gym","pockets"],"colours":["multiple"],"price":92},
-  {"id":"c1000000-0000-0000-0000-000000000006","name":"Luminary Longline Bra","category":"sports-bra","tags":["pilates","yoga","low-impact","longline"],"colours":["multiple"],"price":68},
-  {"id":"c1000000-0000-0000-0000-000000000007","name":"Sculpt Medium Support Bra","category":"sports-bra","tags":["cycling","HIIT","medium-support"],"colours":["multiple"],"price":65},
-  {"id":"c1000000-0000-0000-0000-000000000008","name":"Equilibrium Sports Bra","category":"sports-bra","tags":["studio","low-impact","minimal","triangle"],"colours":["multiple"],"price":72},
-  {"id":"c1000000-0000-0000-0000-000000000009","name":"Aura High Support Bra","category":"sports-bra","tags":["running","high-impact","high-support"],"colours":["multiple"],"price":78},
-  {"id":"c1000000-0000-0000-0000-000000000010","name":"Courtside Pleated Skirt","category":"skirt","tags":["padel","tennis","court","pleated"],"colours":["multiple"],"price":85},
-  {"id":"c1000000-0000-0000-0000-000000000011","name":"Match Point Tennis Skirt","category":"skirt","tags":["tennis","court","structured"],"colours":["multiple"],"price":88},
-  {"id":"c1000000-0000-0000-0000-000000000012","name":"Rally Wrap Skirt","category":"skirt","tags":["padel","court","wrap","versatile"],"colours":["multiple"],"price":82},
-  {"id":"c1000000-0000-0000-0000-000000000013","name":"Elevate Tank Top","category":"top","tags":["training","gym","racerback","versatile"],"colours":["multiple"],"price":55},
-  {"id":"c1000000-0000-0000-0000-000000000014","name":"Serenity Ribbed Tank","category":"top","tags":["studio","athleisure","ribbed","tonal"],"colours":["sage","chalk"],"price":58},
-  {"id":"c1000000-0000-0000-0000-000000000015","name":"Vital Long Sleeve Top","category":"top","tags":["running","outdoor","thumbhole","cold-weather"],"colours":["multiple"],"price":72},
-  {"id":"c1000000-0000-0000-0000-000000000016","name":"Altitude Zip Jacket","category":"jacket","tags":["training","outdoor","packable","full-zip"],"colours":["multiple"],"price":125},
-  {"id":"c1000000-0000-0000-0000-000000000017","name":"Motion Track Jacket","category":"jacket","tags":["studio","versatile","track","boxy"],"colours":["multiple"],"price":138},
-  {"id":"c1000000-0000-0000-0000-000000000018","name":"Restore Hoodie","category":"jacket","tags":["recovery","casual","cozy","rest-day"],"colours":["multiple"],"price":115},
-  {"id":"c1000000-0000-0000-0000-000000000019","name":"Padel Power Set","category":"set","tags":["padel","court","complete-look"],"colours":["multiple"],"price":145},
-  {"id":"c1000000-0000-0000-0000-000000000020","name":"Pilates Harmony Set","category":"set","tags":["pilates","studio","matched-set"],"colours":["multiple"],"price":138},
-  {"id":"c1000000-0000-0000-0000-000000000021","name":"Studio Duo Set","category":"set","tags":["studio","athleisure","tonal","ribbed"],"colours":["sage","chalk"],"price":132},
-  {"id":"c1000000-0000-0000-0000-000000000022","name":"Flow Practice Set","category":"set","tags":["yoga","meditation","seamless","minimal"],"colours":["multiple"],"price":128}
+  {"id":"c2000000-0000-0000-0000-000000000001","name":"Contour Seam Legging","category":"leggings","tags":["training","gym","seamless","versatile"],"colours":["Burgundy","Lavender","Midnight Navy","Obsidian"],"price":1299000},
+  {"id":"c2000000-0000-0000-0000-000000000002","name":"Court Racerback Bra","category":"sports-bra","tags":["tennis","padel","court","racerback","medium-support"],"colours":["Blush","Lavender","Obsidian","Pure White"],"price":999000},
+  {"id":"c2000000-0000-0000-0000-000000000003","name":"Twist Ease Long Sleeve","category":"top","tags":["yoga","studio","relaxed","twist-detail"],"colours":["Blush Pink","Pure White","Sage","Warm Stone"],"price":1099000},
+  {"id":"c2000000-0000-0000-0000-000000000004","name":"Kinetic Crop Tee","category":"top","tags":["training","gym","crop","versatile"],"colours":["Coral","Obsidian","Pure White","Sage"],"price":799000},
+  {"id":"c2000000-0000-0000-0000-000000000005","name":"Active Flow Tunic","category":"top","tags":["studio","yoga","flowy","relaxed"],"colours":["Dusty Mauve","Ivory","Steel Teal","Warm Stone"],"price":1199000},
+  {"id":"c2000000-0000-0000-0000-000000000006","name":"Swift Crop Long Sleeve","category":"top","tags":["running","outdoor","crop","technical"],"colours":["Aqua Mint","Coral Pink","Pure White","Sage"],"price":1099000},
+  {"id":"c2000000-0000-0000-0000-000000000007","name":"Motion Marl Hoodie","category":"jacket","tags":["recovery","casual","cozy","marl"],"colours":["Blush","Charcoal","Heather Grey","Midnight Navy"],"price":1799000},
+  {"id":"c2000000-0000-0000-0000-000000000008","name":"Revive Half-Zip","category":"jacket","tags":["recovery","training","layering","half-zip"],"colours":["Dusty Rose","Heather Grey","Ice Blue","Ivory"],"price":1499000},
+  {"id":"c2000000-0000-0000-0000-000000000009","name":"Shell Run Jacket","category":"jacket","tags":["running","outdoor","weatherproof","packable"],"colours":["Forest","Ivory","Midnight Navy","Obsidian"],"price":2199000},
+  {"id":"c2000000-0000-0000-0000-000000000010","name":"Pace Running Shorts","category":"shorts","tags":["running","gym","lightweight"],"colours":["Aqua Mint","Coral","Obsidian","Sage"],"price":899000},
+  {"id":"c2000000-0000-0000-0000-000000000011","name":"Soft Day Wide-Leg Set","category":"set","tags":["studio","athleisure","relaxed","matched-set"],"colours":["Charcoal","Dusty Rose","Ivory","Sage"],"price":2299000},
+  {"id":"c2000000-0000-0000-0000-000000000012","name":"Polo Court Set","category":"set","tags":["tennis","padel","court","matched-set"],"colours":["Blush Rose","Cream","Obsidian","Royal Blue"],"price":2499000},
+  {"id":"c2000000-0000-0000-0000-000000000013","name":"Grand Slam Court Dress","category":"dress","tags":["tennis","padel","court","structured"],"colours":["Blush Rose","Ivory","Midnight Navy","Pure White"],"price":2799000},
+  {"id":"c2000000-0000-0000-0000-000000000014","name":"Rally Pleated Court Skirt","category":"skirt","tags":["tennis","padel","court","pleated"],"colours":["Burgundy","Midnight Navy","Obsidian","Pure White"],"price":1399000},
+  {"id":"c2000000-0000-0000-0000-000000000015","name":"Ace Tennis Dress","category":"dress","tags":["tennis","court","elevated"],"colours":["Blush Pink","Ivory","Midnight Navy","Terracotta Rose"],"price":2499000}
 ]
 
 You must respond with ONLY valid JSON in the following shape (no markdown, no prose outside JSON):
@@ -150,7 +146,8 @@ You must respond with ONLY valid JSON in the following shape (no markdown, no pr
 }
 
 Return exactly 3 outfit recommendations using ONLY product_ids from the catalog above.
-If you cannot determine appropriate styles, default to the best-seller items: c1000000-0000-0000-0000-000000000001, c1000000-0000-0000-0000-000000000006, c1000000-0000-0000-0000-000000000010.
+Copy each product_id exactly as it appears in the catalog above — do not retype, abbreviate, or modify the UUID characters.
+If you cannot determine appropriate styles, default to the best-seller items: c2000000-0000-0000-0000-000000000013, c2000000-0000-0000-0000-000000000002, c2000000-0000-0000-0000-000000000004.
 `;
 
   interface Recommendation {
@@ -265,34 +262,33 @@ If you cannot determine appropriate styles, default to the best-seller items: c1
     aiResult = {
       recommendations: [
         {
-          name: "Sage Studio Set",
+          name: "Court Ready Set",
           product_ids: [
-            "c1000000-0000-0000-0000-000000000001",
-            "c1000000-0000-0000-0000-000000000006",
+            "c2000000-0000-0000-0000-000000000004",
+            "c2000000-0000-0000-0000-000000000002",
           ],
-          colour_guidance: "Earthy tones complement your natural colouring — lean into sage and ivory.",
-          why_it_works: "The relaxed fit and muted palette align perfectly with your aesthetic preference for minimal activewear.",
+          colour_guidance: "Earthy, muted tones complement your natural colouring — lean into sage and ivory.",
+          why_it_works: "The relaxed crop tee and supportive racerback bra align with your preference for versatile activewear.",
         },
         {
-          name: "Court Ready Look",
+          name: "Pace Setter Look",
           product_ids: [
-            "c1000000-0000-0000-0000-000000000010",
-            "c1000000-0000-0000-0000-000000000009",
+            "c2000000-0000-0000-0000-000000000010",
+            "c2000000-0000-0000-0000-000000000006",
           ],
-          colour_guidance: "Classic monochrome anchors your look with effortless confidence.",
-          why_it_works: "Your preference for structured fits makes this pairing ideal for padel or tennis.",
+          colour_guidance: "Cool, fresh tones anchor your look with effortless confidence.",
+          why_it_works: "Your preference for structured, technical fits makes this pairing ideal for running or court sports.",
         },
         {
-          name: "Ivory Editorial Set",
+          name: "Editorial Court Dress",
           product_ids: [
-            "c1000000-0000-0000-0000-000000000020",
-            "c1000000-0000-0000-0000-000000000017",
+            "c2000000-0000-0000-0000-000000000013",
           ],
           colour_guidance: "Cream and white tones highlight your warm undertones beautifully.",
           why_it_works: "An editorial edge that matches your stated aesthetic — elevated and wearable.",
         },
       ],
-      colour_guidance: "Your palette is naturally suited to warm neutrals — sage, ivory, camel — with occasional slate blue for contrast.",
+      colour_guidance: "Your palette is naturally suited to warm neutrals — sage, ivory, blush — with occasional navy for contrast.",
     };
   }
 
