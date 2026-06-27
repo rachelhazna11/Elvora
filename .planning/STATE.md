@@ -120,6 +120,7 @@ None yet.
 | 260615-goau | Tambah Google OAuth di form login dan registrasi; auto-upsert profil dari Google metadata | 2026-06-15 | a3c40ce | [260615-google-oauth](.planning/quick/260615-google-oauth/) |
 | 260615-prfl | Post-register redirect ke home; setup-profile.html untuk Google OAuth; ubah password di profil | 2026-06-15 | 721a4f7 | [260615-post-register-flow](.planning/quick/260615-post-register-flow/) |
 | 260619-kcu | Admin redirect — storefront pages redirect to admin.html when admin is logged in | 2026-06-19 | 0a84c8b | [260619-kcu-re-structure-the-page-for-user-type-admi](.planning/quick/260619-kcu-re-structure-the-page-for-user-type-admi/) |
+| 260627-oc4 | Tambah halaman Riwayat Style Match (style-history.html) untuk lihat & hapus sesi AI Style Match tersimpan; DRY enrichRecommendations ke style-match.js | 2026-06-27 | 757504d | [260627-oc4-add-style-match-history-page](.planning/quick/260627-oc4-add-style-match-history-page/) |
 
 ### Blockers/Concerns
 
