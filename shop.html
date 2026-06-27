@@ -392,6 +392,209 @@
 
   <div id="footer-root"></div>
 
+  <!-- SIZE FINDER FLOAT BUTTON -->
+  <div class="size-finder-fab">
+    <button class="size-finder-btn" onclick="sfOpen()" aria-label="Open Size Finder">
+      📏
+      <span class="size-finder-btn-label">Size Finder</span>
+    </button>
+  </div>
+
+  <!-- SIZE FINDER MODAL -->
+  <div class="sf-overlay" id="sfModal" role="dialog" aria-modal="true" aria-labelledby="sf-title">
+    <div class="sf-box">
+      <button class="sf-close" onclick="sfClose()" aria-label="Close">×</button>
+      <p class="sf-title" id="sf-title">📏 Size Finder</p>
+      <p class="sf-sub">Jawab 3 pertanyaan singkat, kita cariin ukuran paling pas buat kamu.</p>
+      <div class="sf-progress">
+        <div class="sf-prog-dot done" id="sfDot1"></div>
+        <div class="sf-prog-dot" id="sfDot2"></div>
+        <div class="sf-prog-dot" id="sfDot3"></div>
+      </div>
+
+      <!-- Step 1: Height -->
+      <div class="sf-step active" id="sfStep1">
+        <p class="sf-question">Berapa tinggi badanmu? 📐</p>
+        <div class="sf-options">
+          <div class="sf-option" onclick="sfSelect(this,'height','<155')">
+            <div class="sf-option-icon">🌸</div>
+            <div class="sf-option-label">Di bawah 155 cm</div>
+            <div class="sf-option-hint">Petite frame</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'height','155-162')">
+            <div class="sf-option-icon">🌿</div>
+            <div class="sf-option-label">155–162 cm</div>
+            <div class="sf-option-hint">Regular frame</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'height','162-170')">
+            <div class="sf-option-icon">🌻</div>
+            <div class="sf-option-label">162–170 cm</div>
+            <div class="sf-option-hint">Tall frame</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'height','>170')">
+            <div class="sf-option-icon">🌴</div>
+            <div class="sf-option-label">Di atas 170 cm</div>
+            <div class="sf-option-hint">Extra tall frame</div>
+          </div>
+        </div>
+        <div class="sf-nav">
+          <div></div>
+          <button class="sf-btn-next" onclick="sfGo(2)">Lanjut →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Body type -->
+      <div class="sf-step" id="sfStep2">
+        <p class="sf-question">Bagaimana bentuk tubuhmu? 💃</p>
+        <div class="sf-options">
+          <div class="sf-option" onclick="sfSelect(this,'body','slim')">
+            <div class="sf-option-icon">🍃</div>
+            <div class="sf-option-label">Slim / Slender</div>
+            <div class="sf-option-hint">Lurus & ramping</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'body','athletic')">
+            <div class="sf-option-icon">💪</div>
+            <div class="sf-option-label">Athletic</div>
+            <div class="sf-option-hint">Berotot & proporsional</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'body','curvy')">
+            <div class="sf-option-icon">🌺</div>
+            <div class="sf-option-label">Curvy</div>
+            <div class="sf-option-hint">Pinggul lebih lebar</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'body','plus')">
+            <div class="sf-option-icon">🌸</div>
+            <div class="sf-option-label">Plus Size</div>
+            <div class="sf-option-hint">Ukuran lebih besar</div>
+          </div>
+        </div>
+        <div class="sf-nav">
+          <button class="sf-btn-back" onclick="sfGo(1)">← Kembali</button>
+          <button class="sf-btn-next" onclick="sfGo(3)">Lanjut →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Fit preference -->
+      <div class="sf-step" id="sfStep3">
+        <p class="sf-question">Prefer fit seperti apa? 👗</p>
+        <div class="sf-options">
+          <div class="sf-option" onclick="sfSelect(this,'fit','snug')">
+            <div class="sf-option-icon">🤸</div>
+            <div class="sf-option-label">Snug / Fitted</div>
+            <div class="sf-option-hint">Pas badan, nampak lekukan</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'fit','regular')">
+            <div class="sf-option-icon">✨</div>
+            <div class="sf-option-label">Regular</div>
+            <div class="sf-option-hint">Pas tapi tidak ketat</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'fit','relaxed')">
+            <div class="sf-option-icon">🍃</div>
+            <div class="sf-option-label">Relaxed / Loose</div>
+            <div class="sf-option-hint">Longgar & nyaman</div>
+          </div>
+          <div class="sf-option" onclick="sfSelect(this,'fit','modest')">
+            <div class="sf-option-icon">🧕</div>
+            <div class="sf-option-label">Modest Coverage</div>
+            <div class="sf-option-hint">Lebih panjang & tertutup</div>
+          </div>
+        </div>
+        <div class="sf-nav">
+          <button class="sf-btn-back" onclick="sfGo(2)">← Kembali</button>
+          <button class="sf-btn-next" onclick="sfCalc()">Lihat Ukuranku ✨</button>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="sf-step" id="sfResult">
+        <div id="sfResultBox"></div>
+        <div style="margin-top:16px;display:flex;gap:10px;">
+          <button class="sf-btn-back" style="flex:1;" onclick="sfGo(1)">Coba Lagi</button>
+          <button class="sf-btn-next" style="flex:2;" onclick="sfClose()">Shop Sekarang 🛍️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var sfAnswers = {};
+
+      window.sfOpen = function () {
+        sfAnswers = {};
+        document.querySelectorAll('.sf-step').forEach(function (s) { s.classList.remove('active'); });
+        document.getElementById('sfStep1').classList.add('active');
+        document.querySelectorAll('.sf-prog-dot').forEach(function (d, i) { d.classList.toggle('done', i === 0); });
+        document.querySelectorAll('#sfModal .sf-option').forEach(function (o) { o.classList.remove('selected'); });
+        document.getElementById('sfModal').classList.add('open');
+      };
+
+      window.sfClose = function () {
+        document.getElementById('sfModal').classList.remove('open');
+      };
+
+      window.sfSelect = function (el, key, val) {
+        el.closest('.sf-options').querySelectorAll('.sf-option').forEach(function (o) { o.classList.remove('selected'); });
+        el.classList.add('selected');
+        sfAnswers[key] = val;
+      };
+
+      window.sfGo = function (step) {
+        document.querySelectorAll('.sf-step').forEach(function (s) { s.classList.remove('active'); });
+        var target = step === 4 ? document.getElementById('sfResult') : document.getElementById('sfStep' + step);
+        if (target) target.classList.add('active');
+        document.querySelectorAll('.sf-prog-dot').forEach(function (d, i) { d.classList.toggle('done', i < step); });
+      };
+
+      window.sfCalc = function () {
+        var height = sfAnswers.height, body = sfAnswers.body, fit = sfAnswers.fit;
+        var size = 'M', chest = '84–88', waist = '66–70', hip = '90–94';
+
+        if (body === 'slim') {
+          if (height === '<155') { size = 'XS'; chest = '76–80'; waist = '58–62'; hip = '82–86'; }
+          else { size = 'S'; chest = '80–84'; waist = '62–66'; hip = '86–90'; }
+        } else if (body === 'athletic') {
+          size = height === '>170' ? 'L' : 'M';
+          if (size === 'L') { chest = '92–96'; waist = '74–78'; hip = '98–102'; }
+        } else if (body === 'curvy') {
+          size = height === '<155' ? 'M' : 'L';
+          if (size === 'L') { chest = '92–96'; waist = '74–78'; hip = '98–102'; }
+        } else if (body === 'plus') {
+          size = height === '<155' ? 'XL' : 'XXL';
+          chest = '100–108'; waist = '82–90'; hip = '106–114';
+        }
+
+        if (fit === 'relaxed' || fit === 'modest') {
+          var up = { XS: 'S', S: 'M', M: 'L', L: 'XL', XL: 'XXL' };
+          size = up[size] || size;
+        }
+
+        var fitLabel = fit === 'snug' ? 'Fitted' : fit === 'regular' ? 'Regular' : fit === 'relaxed' ? 'Relaxed' : 'Modest';
+
+        document.getElementById('sfResultBox').innerHTML =
+          '<div class="sf-result-badge">' + size + '</div>' +
+          '<div class="sf-result-title">Ukuranmu: ' + size + '</div>' +
+          '<p class="sf-result-desc">Berdasarkan jawabanmu, ukuran <strong>' + size + '</strong> adalah pilihan paling pas buat kamu! 🌸</p>' +
+          '<table class="sf-result-table">' +
+          '<tr><td>Lingkar dada</td><td>' + chest + ' cm</td></tr>' +
+          '<tr><td>Lingkar pinggang</td><td>' + waist + ' cm</td></tr>' +
+          '<tr><td>Lingkar pinggul</td><td>' + hip + ' cm</td></tr>' +
+          '<tr><td>Fit style</td><td>' + fitLabel + '</td></tr>' +
+          '</table>' +
+          '<p style="font-size:11px;color:#8a8a8a;margin-top:8px;">💡 Kalau kamu di antara dua ukuran, pilih yang lebih besar untuk kenyamanan maksimal.</p>';
+
+        document.querySelectorAll('.sf-step').forEach(function (s) { s.classList.remove('active'); });
+        document.getElementById('sfResult').classList.add('active');
+        document.querySelectorAll('.sf-prog-dot').forEach(function (d) { d.classList.add('done'); });
+      };
+
+      document.addEventListener('click', function (e) {
+        var modal = document.getElementById('sfModal');
+        if (e.target === modal) sfClose();
+      });
+    })();
+  </script>
+
   <!-- Script loading order (per PATTERNS.md):
        1. __env.js  — plain script (env vars)
        2. supabase.js — ES module (Supabase client)
