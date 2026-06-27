@@ -13,3 +13,6 @@ js/__env.js
 
 # Claude Code worktrees (local only, never commit)
 .claude/worktrees/
+
+images/
+Laporan_Pengembangan_Website_Berbantuan_AI.docx
