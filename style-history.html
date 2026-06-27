@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Style Match — ELVORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- Toastify for delete success/error notifications -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+  <style>
+    /* ── Hero ── */
+    .sm-hero {
+      background: linear-gradient(135deg, var(--lavender) 0%, #9B87CA 100%);
+      padding: 80px 64px 64px;
+      text-align: center;
+    }
+    .sm-hero-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); margin-bottom: 16px;
+    }
+    .sm-hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      color: white; margin-bottom: 16px; line-height: 1.2;
+    }
+    .sm-hero-sub {
+      font-size: 15px; color: rgba(255,255,255,0.8);
+      max-width: 480px; margin: 0 auto; line-height: 1.7;
+    }
+
+    /* ── Layout ── */
+    .sm-main {
+      background: var(--beige); padding: 64px 32px;
+      display: flex; justify-content: center; min-height: 50vh;
+    }
+    .sm-wrap { width: 100%; max-width: 760px; }
+
+    /* ── Session card ── */
+    .sh-session {
+      background: white; border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      overflow: hidden; margin-bottom: 32px;
+    }
+    .sh-session-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; padding: 24px 28px 20px;
+      border-bottom: 1px solid rgba(168,191,163,0.18);
+    }
+    .sh-session-date {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px; color: var(--charcoal); margin-bottom: 4px;
+    }
+    .sh-session-time {
+      font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--sage);
+    }
+    .sh-prefs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .sh-pref-tag {
+      font-size: 11px; font-weight: 600; color: var(--charcoal);
+      background: rgba(168,191,163,0.14); border-radius: 50px;
+      padding: 5px 12px; letter-spacing: 0.3px;
+    }
+    .sh-delete-btn {
+      flex-shrink: 0; background: white;
+      border: 1.5px solid rgba(220,80,80,0.35); border-radius: 50px;
+      padding: 8px 16px; font-size: 12px; font-weight: 600;
+      font-family: 'Poppins', sans-serif; color: #b04646; cursor: pointer;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .sh-delete-btn:hover { background: #b04646; color: white; border-color: #b04646; }
+    .sh-delete-btn:disabled { opacity: 0.5; cursor: default; }
+    .sh-session-body { padding: 20px 28px 28px; }
+    .sh-colour-note {
+      font-size: 13px; color: var(--text-muted); line-height: 1.7;
+      background: rgba(168,191,163,0.1); border-radius: 12px;
+      padding: 14px 18px; border-left: 3px solid var(--sage); margin-bottom: 8px;
+    }
+
+    /* ── Outfit recommendation cards (shared visual language with style-match) ── */
+    .sm-outfit-grid { display: grid; gap: 20px; margin-top: 20px; }
+    .sm-outfit-card {
+      background: white; border-radius: 20px; overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid rgba(168,191,163,0.18);
+    }
+    .sm-outfit-card:hover {
+      transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+    .sm-outfit-images {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 160px));
+      justify-content: center; gap: 12px; background: var(--beige); padding: 12px;
+    }
+    .sm-outfit-img-wrap {
+      aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; background: #f0ede8;
+    }
+    .sm-outfit-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.4s;
+    }
+    .sm-outfit-img-wrap:hover img { transform: scale(1.04); }
+    .sm-outfit-img-placeholder {
+      width: 100%; height: 100%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; color: var(--text-muted);
+    }
+    .sm-outfit-body { padding: 20px 24px 24px; }
+    .sm-outfit-number {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--sage); margin-bottom: 4px;
+    }
+    .sm-outfit-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; color: var(--charcoal); margin-bottom: 12px;
+    }
+    .sm-outfit-why {
+      font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px;
+    }
+    .sm-outfit-colour {
+      font-size: 12px; color: var(--charcoal);
+      background: rgba(168,191,163,0.12); border-radius: 8px;
+      padding: 8px 12px; margin-bottom: 16px; line-height: 1.6;
+    }
+    .sm-outfit-products { display: flex; gap: 10px; flex-wrap: wrap; }
+    .sm-outfit-product-btn {
+      flex: 1; min-width: 120px; background: white;
+      border: 1.5px solid rgba(168,191,163,0.5); border-radius: 50px;
+      padding: 8px 14px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+      font-family: 'Poppins', sans-serif; cursor: pointer; transition: all 0.2s;
+      color: var(--charcoal); text-align: center; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .sm-outfit-product-btn:hover {
+      background: var(--charcoal); color: white; border-color: var(--charcoal);
+    }
+
+    /* ── Empty + loading + error states ── */
+    .sh-state-card {
+      background: white; border-radius: 24px; padding: 56px 40px;
+      text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    }
+    .sh-state-icon { font-size: 48px; margin-bottom: 16px; }
+    .sh-state-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; color: var(--charcoal); margin-bottom: 10px;
+    }
+    .sh-state-desc {
+      font-size: 14px; color: var(--text-muted); line-height: 1.7;
+      margin-bottom: 24px; max-width: 420px; margin-left: auto; margin-right: auto;
+    }
+    .sh-cta {
+      background: var(--charcoal); color: white; border: none; border-radius: 50px;
+      padding: 13px 30px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+      font-family: 'Poppins', sans-serif; cursor: pointer; text-decoration: none;
+      transition: background 0.2s; display: inline-block;
+    }
+    .sh-cta:hover { background: var(--sage); }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .sh-spinner {
+      width: 40px; height: 40px; margin: 0 auto 20px;
+      border: 3px solid rgba(168,191,163,0.25); border-top-color: var(--sage);
+      border-radius: 50%; animation: spin 0.9s linear infinite;
+    }
+
+    @media (max-width: 768px) {
+      .sm-hero { padding: 60px 24px 48px; }
+      .sm-main { padding: 32px 16px; }
+      .sh-session-head { flex-direction: column; }
+      .sm-outfit-images { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main>
+    <!-- Hero -->
+    <section class="sm-hero">
+      <p class="sm-hero-label">ELVORA · AI Style Match</p>
+      <h1 class="sm-hero-title">Riwayat Style Match-mu</h1>
+      <p class="sm-hero-sub">Semua Style Report yang pernah Elvy buat untukmu — lihat kembali outfit rekomendasinya kapanpun.</p>
+    </section>
+
+    <!-- Sessions (Alpine.js) -->
+    <section class="sm-main">
+      <div class="sm-wrap" x-data="styleHistoryApp()" x-init="init()">
+
+        <!-- Loading -->
+        <template x-if="loading">
+          <div class="sh-state-card">
+            <div class="sh-spinner"></div>
+            <p class="sh-state-desc" style="margin-bottom:0;">Memuat riwayat Style Match-mu…</p>
+          </div>
+        </template>
+
+        <!-- Error -->
+        <template x-if="!loading && error">
+          <div class="sh-state-card">
+            <div class="sh-state-icon">😕</div>
+            <h2 class="sh-state-title">Gagal Memuat Riwayat</h2>
+            <p class="sh-state-desc" x-text="errorMsg"></p>
+            <button class="sh-cta" @click="init()">Coba Lagi</button>
+          </div>
+        </template>
+
+        <!-- Empty -->
+        <template x-if="!loading && !error && sessions.length === 0">
+          <div class="sh-state-card">
+            <div class="sh-state-icon">✨</div>
+            <h2 class="sh-state-title">Belum Ada Riwayat</h2>
+            <p class="sh-state-desc">Kamu belum pernah melakukan Style Match. Yuk, mulai sekarang — upload fotomu dan biarkan Elvy merekomendasikan outfit ELVORA yang paling sesuai.</p>
+            <a href="/style-match.html" class="sh-cta">Mulai Style Match</a>
+          </div>
+        </template>
+
+        <!-- Session list -->
+        <template x-if="!loading && !error && sessions.length > 0">
+          <div>
+            <template x-for="session in sessions" :key="session.id">
+              <article class="sh-session">
+
+                <div class="sh-session-head">
+                  <div>
+                    <p class="sh-session-date" x-text="session.dateLabel"></p>
+                    <p class="sh-session-time" x-text="session.timeLabel"></p>
+                    <div class="sh-prefs">
+                      <template x-for="tag in session.prefTags" :key="tag">
+                        <span class="sh-pref-tag" x-text="tag"></span>
+                      </template>
+                    </div>
+                  </div>
+                  <button
+                    class="sh-delete-btn"
+                    :disabled="session.deleting"
+                    @click="remove(session)">
+                    <span x-text="session.deleting ? 'Menghapus…' : '🗑 Hapus'"></span>
+                  </button>
+                </div>
+
+                <div class="sh-session-body">
+                  <div class="sh-colour-note" x-show="session.colour_guidance">
+                    🎨 <span x-text="session.colour_guidance"></span>
+                  </div>
+
+                  <div class="sm-outfit-grid">
+                    <template x-for="(outfit, idx) in session.enriched" :key="outfit.name + '-' + idx">
+                      <div class="sm-outfit-card">
+
+                        <!-- Outfit with matched products -->
+                        <div class="sm-outfit-images" x-show="outfit.products && outfit.products.length > 0">
+                          <template x-for="product in outfit.products" :key="product.id">
+                            <div class="sm-outfit-img-wrap">
+                              <img
+                                :src="(product.image_url || '').split('?')[0] + '?w=800&q=80'"
+                                :alt="product.name"
+                                loading="lazy"
+                                style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;"
+                                @error="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
+                              <div class="sm-outfit-img-placeholder" style="display:none">👗</div>
+                            </div>
+                          </template>
+                        </div>
+                        <!-- Outfit with no matched products -->
+                        <div class="sm-outfit-images" x-show="!outfit.products || outfit.products.length === 0">
+                          <div class="sm-outfit-img-wrap">
+                            <div class="sm-outfit-img-placeholder">✨</div>
+                          </div>
+                        </div>
+
+                        <div class="sm-outfit-body">
+                          <p class="sm-outfit-number" x-text="'Outfit ' + (idx + 1)"></p>
+                          <h3 class="sm-outfit-name" x-text="outfit.name"></h3>
+                          <p class="sm-outfit-why" x-text="outfit.why_it_works"></p>
+                          <div class="sm-outfit-colour" x-show="outfit.colour_guidance">
+                            🎨 <span x-text="outfit.colour_guidance"></span>
+                          </div>
+
+                          <div class="sm-outfit-products" x-show="outfit.products && outfit.products.length > 0">
+                            <template x-for="product in outfit.products" :key="product.id">
+                              <a :href="'/product.html?slug=' + product.slug" class="sm-outfit-product-btn">
+                                <span x-text="product.name"></span>
+                                <span style="font-size:10px;opacity:0.7;" x-text="'Rp ' + (product.price ? product.price.toLocaleString('id-ID') : '–')"></span>
+                              </a>
+                            </template>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </article>
+            </template>
+
+            <!-- Footer CTA to run a new match -->
+            <div style="text-align:center;margin-top:8px;">
+              <a href="/style-match.html" class="sh-cta">↺ Cari Style Match Baru</a>
+            </div>
+          </div>
+        </template>
+
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-root"></div>
+
+  <!-- Scripts (same wiring/order as style-match.html) -->
+  <script src="/js/__env.js"></script>
+  <script type="module" src="/js/supabase.js"></script>
+  <script type="module" src="/js/admin-redirect.js"></script>
+  <script type="module" src="/js/cart.js"></script>
+  <script type="module" src="/js/components.js"></script>
+  <script type="module" src="/js/style-match.js"></script>
+
+  <script>
+    // Labels for the preference tags (matches the Style Match form vocabulary).
+    const FIT_LABEL = { tight: 'Ketat', regular: 'Regular', relaxed: 'Relaxed', loose: 'Longgar' };
+
+    function toast(message, ok) {
+      if (typeof Toastify === 'undefined') { return; }
+      Toastify({
+        text: message,
+        duration: 3000,
+        gravity: 'bottom',
+        position: 'center',
+        style: { background: ok ? '#A8BFA3' : '#b04646', borderRadius: '12px', fontFamily: 'Poppins, sans-serif', fontSize: '13px' },
+      }).showToast();
+    }
+
+    function styleHistoryApp() {
+      return {
+        loading: true,
+        error: false,
+        errorMsg: '',
+        sessions: [],
+
+        async init() {
+          this.loading = true;
+          this.error = false;
+
+          // Wait for Supabase + style-match module to attach to window.
+          let tries = 0;
+          while ((!window.supabase || !window.getSessions) && tries < 30) {
+            await new Promise(r => setTimeout(r, 100));
+            tries++;
+          }
+
+          if (!window.supabase) {
+            this.error = true;
+            this.errorMsg = 'Koneksi belum siap. Silakan refresh halaman.';
+            this.loading = false;
+            return;
+          }
+
+          // Guest guard — mirror account.html: send unauthenticated users to sign in.
+          const { data: { user } } = await window.supabase.auth.getUser();
+          if (!user) {
+            window.location.href = '/auth.html?tab=signin';
+            return;
+          }
+
+          try {
+            const rows = await window.getSessions({ limit: 50 });
+            // Enrich each session's recommendations with full product objects.
+            this.sessions = await Promise.all(rows.map(async (row) => {
+              const enriched = typeof window.enrichRecommendations === 'function'
+                ? await window.enrichRecommendations(row.recommendations ?? [])
+                : (row.recommendations ?? []).map(rec => ({
+                    name: rec.name,
+                    colour_guidance: rec.colour_guidance,
+                    why_it_works: rec.why_it_works,
+                    products: [],
+                  }));
+              return {
+                id: row.id,
+                colour_guidance: row.colour_guidance ?? '',
+                enriched,
+                prefTags: this.buildPrefTags(row.preferences),
+                dateLabel: this.formatDate(row.created_at),
+                timeLabel: this.formatTime(row.created_at),
+                deleting: false,
+              };
+            }));
+          } catch (err) {
+            this.error = true;
+            this.errorMsg = err.message ?? 'Tidak dapat memuat riwayat. Silakan coba lagi.';
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        buildPrefTags(prefs) {
+          if (!prefs || typeof prefs !== 'object') return [];
+          const tags = [];
+          if (Array.isArray(prefs.activity)) tags.push(...prefs.activity);
+          if (prefs.fit) tags.push(FIT_LABEL[prefs.fit] ?? prefs.fit);
+          if (prefs.aesthetic) tags.push(prefs.aesthetic);
+          if (prefs.colour) tags.push(prefs.colour);
+          return tags;
+        },
+
+        formatDate(iso) {
+          if (!iso) return '';
+          try {
+            return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+          } catch { return iso; }
+        },
+
+        formatTime(iso) {
+          if (!iso) return '';
+          try {
+            return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+          } catch { return ''; }
+        },
+
+        async remove(session) {
+          if (session.deleting) return;
+          if (!window.confirm('Hapus sesi Style Match ini dari riwayatmu?')) return;
+
+          session.deleting = true;
+          try {
+            await window.deleteSession(session.id);
+            this.sessions = this.sessions.filter(s => s.id !== session.id);
+            toast('Sesi dihapus dari riwayat.', true);
+          } catch (err) {
+            session.deleting = false;
+            toast(err.message ?? 'Gagal menghapus sesi. Coba lagi.', false);
+          }
+        },
+      };
+    }
+  </script>
+</body>
+</html>

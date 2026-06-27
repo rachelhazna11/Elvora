@@ -221,6 +221,101 @@ export async function getSessions({ limit = 20 } = {}) {
 }
 
 /**
+ * Enrich AI recommendations (which only carry product_ids) with full product
+ * objects from Supabase — name, slug, price, and primary image URL.
+ *
+ * Shared by the live Style Match results page (style-match.html) and the
+ * Style Match history page (style-history.html) so the resolution logic stays
+ * in one place.
+ *
+ * @param {Array<{ name: string, colour_guidance?: string, why_it_works?: string, product_ids?: string[] }>} recommendations
+ * @returns {Promise<Array<{
+ *   name: string,
+ *   colour_guidance: string|undefined,
+ *   why_it_works: string|undefined,
+ *   products: Array<{ id: string, name: string, slug: string, price: number, image_url: string|null }>
+ * }>>}
+ */
+export async function enrichRecommendations(recommendations) {
+  if (!Array.isArray(recommendations) || recommendations.length === 0) return [];
+
+  // Collect all unique product IDs from all outfit recommendations.
+  // The AI occasionally mangles a UUID (e.g. drops a hyphen) when generating
+  // product_ids as text — a single malformed ID in an `.in()` filter makes
+  // Postgres reject the entire batch with a 400, so every valid ID in that
+  // request would silently get zero results back too. Filter to well-formed
+  // UUIDs only before querying.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const allIds = [...new Set(
+    recommendations.flatMap(r => r.product_ids ?? [])
+  )].filter(id => {
+    const isValid = UUID_RE.test(id);
+    if (!isValid) console.warn('Skipping malformed product_id from AI response:', id);
+    return isValid;
+  });
+
+  // Query products and product_images as two plain queries (not an embedded
+  // select) — embedded selects depend on PostgREST having the
+  // product_images → products FK in its schema cache, which silently returns
+  // an error if that cache hasn't been reloaded after migration.
+  let productMap = {};
+  let imagesByProduct = {};
+  if (allIds.length > 0 && window.supabase) {
+    try {
+      const [{ data: products, error: productsErr }, { data: images, error: imagesErr }] = await Promise.all([
+        window.supabase
+          .from('products')
+          .select('id, name, slug, base_price')
+          .in('id', allIds),
+        window.supabase
+          .from('product_images')
+          .select('product_id, url, display_order')
+          .in('product_id', allIds)
+          .order('display_order', { ascending: true }),
+      ]);
+
+      if (productsErr) console.error('Failed to fetch products for style match:', productsErr.message ?? productsErr);
+      if (imagesErr) console.error('Failed to fetch product images for style match:', imagesErr.message ?? imagesErr);
+
+      if (!productsErr && products) {
+        productMap = Object.fromEntries(products.map(p => [p.id, p]));
+      }
+      if (!imagesErr && images) {
+        imagesByProduct = images.reduce((acc, img) => {
+          if (!acc[img.product_id]) acc[img.product_id] = [];
+          acc[img.product_id].push(img);
+          return acc;
+        }, {});
+      }
+    } catch (e) {
+      console.error('Failed to fetch product details:', e);
+    }
+  }
+
+  // Map each recommendation to its full product objects
+  return recommendations.map(rec => ({
+    name: rec.name,
+    colour_guidance: rec.colour_guidance,
+    why_it_works: rec.why_it_works,
+    products: (rec.product_ids ?? [])
+      .map(id => productMap[id])
+      .filter(Boolean)
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: p.base_price,
+        image_url: (() => {
+          const raw = imagesByProduct[p.id]?.[0]?.url ?? null;
+          if (!raw) return null;
+          // bare photo ID → full Unsplash CDN URL; full URL → strip existing params
+          return raw.startsWith('http') ? raw.split('?')[0] : `https://images.unsplash.com/${raw}`;
+        })(),
+      })),
+  }));
+}
+
+/**
  * Delete a specific AI session by ID.
  * Only the session owner can delete (enforced by RLS).
  *
@@ -271,3 +366,4 @@ function _mockResult() {
 window.submitStyleMatch = submitStyleMatch;
 window.getSessions = getSessions;
 window.deleteSession = deleteSession;
+window.enrichRecommendations = enrichRecommendations;

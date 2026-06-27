@@ -809,13 +809,13 @@
               <template x-if="isLoggedIn">
                 <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
                   <a
-                    href="/account.html"
+                    href="/style-history.html"
                     style="display:inline-flex;align-items:center;gap:8px;background:var(--sage);color:white;border:none;border-radius:50px;padding:13px 28px;font-size:13px;font-weight:600;letter-spacing:0.5px;font-family:'Poppins',sans-serif;text-decoration:none;transition:all 0.2s;"
                     onmouseover="this.style.background='var(--charcoal)'"
                     onmouseout="this.style.background='var(--sage)'">
                     ✦ Sesi Ini Tersimpan di Profilmu
                   </a>
-                  <p style="font-size:11px;color:var(--text-muted);">Lihat riwayat Style Match di halaman akunmu</p>
+                  <p style="font-size:11px;color:var(--text-muted);">Lihat semua riwayat Style Match-mu di halaman Riwayat</p>
                 </div>
               </template>
 
@@ -1185,82 +1185,20 @@
         },
 
         // ── Enrich product IDs with full product objects ──
+        // Delegates to the shared window.enrichRecommendations (js/style-match.js)
+        // so the live results page and the history page resolve products identically.
         async enrichRecommendations(recommendations) {
-          if (!Array.isArray(recommendations) || recommendations.length === 0) return [];
-
-          // Collect all unique product IDs from all outfit recommendations.
-          // The AI occasionally mangles a UUID (e.g. drops a hyphen) when
-          // generating product_ids as text — a single malformed ID in an
-          // `.in()` filter makes Postgres reject the entire batch with a 400,
-          // so every valid ID in that request would silently get zero results
-          // back too. Filter to well-formed UUIDs only before querying.
-          const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-          const allIds = [...new Set(
-            recommendations.flatMap(r => r.product_ids ?? [])
-          )].filter(id => {
-            const isValid = UUID_RE.test(id);
-            if (!isValid) console.warn('Skipping malformed product_id from AI response:', id);
-            return isValid;
-          });
-
-          // Query products and product_images as two plain queries (not an
-          // embedded select) — embedded selects depend on PostgREST having the
-          // product_images → products FK in its schema cache, which silently
-          // returns an error if that cache hasn't been reloaded after migration.
-          let productMap = {};
-          let imagesByProduct = {};
-          if (allIds.length > 0 && window.supabase) {
-            try {
-              const [{ data: products, error: productsErr }, { data: images, error: imagesErr }] = await Promise.all([
-                window.supabase
-                  .from('products')
-                  .select('id, name, slug, base_price')
-                  .in('id', allIds),
-                window.supabase
-                  .from('product_images')
-                  .select('product_id, url, display_order')
-                  .in('product_id', allIds)
-                  .order('display_order', { ascending: true }),
-              ]);
-
-              if (productsErr) console.error('Failed to fetch products for style match:', productsErr.message ?? productsErr);
-              if (imagesErr) console.error('Failed to fetch product images for style match:', imagesErr.message ?? imagesErr);
-
-              if (!productsErr && products) {
-                productMap = Object.fromEntries(products.map(p => [p.id, p]));
-              }
-              if (!imagesErr && images) {
-                imagesByProduct = images.reduce((acc, img) => {
-                  if (!acc[img.product_id]) acc[img.product_id] = [];
-                  acc[img.product_id].push(img);
-                  return acc;
-                }, {});
-              }
-            } catch (e) {
-              console.error('Failed to fetch product details:', e);
-            }
+          if (typeof window.enrichRecommendations === 'function') {
+            return window.enrichRecommendations(recommendations);
           }
-
-          // Map each recommendation to its full product objects
-          return recommendations.map(rec => ({
+          // Module not loaded yet — return recommendations without product data
+          // rather than throwing; the UI shows the outfit text with placeholders.
+          console.warn('enrichRecommendations not loaded; rendering without product details.');
+          return (recommendations ?? []).map(rec => ({
             name: rec.name,
             colour_guidance: rec.colour_guidance,
             why_it_works: rec.why_it_works,
-            products: (rec.product_ids ?? [])
-              .map(id => productMap[id])
-              .filter(Boolean)
-              .map(p => ({
-                id: p.id,
-                name: p.name,
-                slug: p.slug,
-                price: p.base_price,
-                image_url: (() => {
-                  const raw = imagesByProduct[p.id]?.[0]?.url ?? null;
-                  if (!raw) return null;
-                  // bare photo ID → full Unsplash CDN URL; full URL → strip existing params
-                  return raw.startsWith('http') ? raw.split('?')[0] : `https://images.unsplash.com/${raw}`;
-                })(),
-              })),
+            products: [],
           }));
         },
 

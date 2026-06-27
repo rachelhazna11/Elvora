@@ -186,6 +186,7 @@ const navHTML = `
         <div x-show="userDropOpen" class="nav-dropdown" style="display:none;">
           <a href="/account.html" class="nav-dropdown-item">My Account</a>
           <a href="/account.html#wishlist" class="nav-dropdown-item">Wishlist</a>
+          <a href="/style-history.html" class="nav-dropdown-item">Riwayat Style Match</a>
           <div class="nav-dropdown-divider"></div>
           <button @click="window.elvoraSignOut().then(() => { $store.auth.user = null; $store.auth.loggedIn = false; window.location.href='/index.html'; }).catch(err => { console.error('[auth] sign out failed', err); })" class="nav-dropdown-item danger">Sign Out</button>
         </div>
