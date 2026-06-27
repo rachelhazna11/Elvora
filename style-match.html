@@ -1188,10 +1188,20 @@
         async enrichRecommendations(recommendations) {
           if (!Array.isArray(recommendations) || recommendations.length === 0) return [];
 
-          // Collect all unique product IDs from all outfit recommendations
+          // Collect all unique product IDs from all outfit recommendations.
+          // The AI occasionally mangles a UUID (e.g. drops a hyphen) when
+          // generating product_ids as text — a single malformed ID in an
+          // `.in()` filter makes Postgres reject the entire batch with a 400,
+          // so every valid ID in that request would silently get zero results
+          // back too. Filter to well-formed UUIDs only before querying.
+          const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
           const allIds = [...new Set(
             recommendations.flatMap(r => r.product_ids ?? [])
-          )];
+          )].filter(id => {
+            const isValid = UUID_RE.test(id);
+            if (!isValid) console.warn('Skipping malformed product_id from AI response:', id);
+            return isValid;
+          });
 
           // Query products and product_images as two plain queries (not an
           // embedded select) — embedded selects depend on PostgREST having the
