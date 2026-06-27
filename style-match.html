@@ -232,8 +232,9 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
     .sm-outfit-images {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 2px; background: var(--beige); padding: 12px; gap: 12px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 160px));
+      justify-content: center;
+      gap: 12px; background: var(--beige); padding: 12px;
     }
     .sm-outfit-img-wrap {
       aspect-ratio: 3/4; border-radius: 12px; overflow: hidden;
@@ -1199,7 +1200,8 @@
               const { data: products, error } = await window.supabase
                 .from('products')
                 .select('id, name, slug, base_price, product_images(url, display_order)')
-                .in('id', allIds);
+                .in('id', allIds)
+                .order('display_order', { referencedTable: 'product_images' });
 
               if (!error && products) {
                 productMap = Object.fromEntries(products.map(p => [p.id, p]));
