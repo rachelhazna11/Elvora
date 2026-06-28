@@ -88,7 +88,7 @@ const navHTML = `
       }
     },
     goToProduct(slug) {
-      window.location.href = '/product.html?slug=' + slug;
+      window.location.href = '/product?slug=' + slug;
       this.searchOpen = false;
       this.suggestions = [];
       this.searchQuery = '';

@@ -245,57 +245,117 @@
             </div>
           </div>
 
-          <!-- Step 3: Payment (placeholder) -->
+          <!-- Step 3: Payment -->
           <div x-show="step === 3" style="display:none;" role="region" aria-label="Payment">
             <div class="checkout-card">
               <h2 class="checkout-card-title">Payment</h2>
 
-              <!-- Mock card visual -->
-              <div class="payment-card-mock">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                  <svg width="40" height="28" viewBox="0 0 40 28" fill="none" aria-hidden="true">
-                    <circle cx="14" cy="14" r="14" fill="rgba(255,255,255,0.2)"/>
-                    <circle cx="26" cy="14" r="14" fill="rgba(255,255,255,0.1)"/>
-                  </svg>
-                  <span style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.6);">ELVORA PAY</span>
-                </div>
-                <p class="payment-card-number" x-text="cardNumber || '•••• •••• •••• ••••'"></p>
-                <div class="payment-card-meta">
-                  <div><span>Name</span><br><span style="color:white;font-size:12px;margin-top:2px;display:block;" x-text="(firstName + ' ' + lastName).toUpperCase() || 'YOUR NAME'"></span></div>
-                  <div><span>Expires</span><br><span style="color:white;font-size:12px;margin-top:2px;display:block;">12/28</span></div>
-                </div>
-              </div>
-
               <p class="payment-secure-note">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 9.74-7 11C8.5 21.74 5 17 5 12V6l7-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Secure payment powered by Elvora Pay
+                Semua metode pembayaran aman &amp; terenkripsi
               </p>
 
-              <!-- Payment form fields -->
-              <div class="checkout-form-group">
-                <label for="checkout-card-number" class="checkout-form-label">Card Number *</label>
-                <input id="checkout-card-number" type="text" x-model="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" class="checkout-form-input" aria-label="Card number" style="letter-spacing:2px;">
-              </div>
-              <div class="checkout-form-row checkout-form-group">
-                <div>
-                  <label for="checkout-expiry" class="checkout-form-label">Expiry *</label>
-                  <input id="checkout-expiry" type="text" x-model="expiry" placeholder="MM/YY" maxlength="5" class="checkout-form-input" aria-label="Expiry date">
-                </div>
-                <div>
-                  <label for="checkout-cvv" class="checkout-form-label">CVV *</label>
-                  <input id="checkout-cvv" type="text" x-model="cvv" placeholder="123" maxlength="4" class="checkout-form-input" aria-label="CVV">
-                </div>
+              <!-- Payment method selector -->
+              <p style="font-size:13px;font-weight:600;color:var(--charcoal);margin-bottom:14px;">Metode Pembayaran</p>
+              <div class="pay-methods" role="radiogroup" aria-label="Pilih metode pembayaran">
+
+                <button
+                  class="pay-method-card"
+                  :class="{ selected: paymentMethod === 'qris' }"
+                  @click="paymentMethod = 'qris'"
+                  role="radio"
+                  :aria-checked="paymentMethod === 'qris'"
+                  aria-label="QRIS — Scan QR code"
+                  type="button"
+                >
+                  <div class="pay-method-logo pay-logo-qris">QRIS</div>
+                  <div>
+                    <div class="pay-method-name">QRIS</div>
+                    <div class="pay-method-hint">Scan QR code</div>
+                  </div>
+                  <div class="pay-check" aria-hidden="true">✓</div>
+                </button>
+
+                <button
+                  class="pay-method-card"
+                  :class="{ selected: paymentMethod === 'gopay' }"
+                  @click="paymentMethod = 'gopay'"
+                  role="radio"
+                  :aria-checked="paymentMethod === 'gopay'"
+                  aria-label="GoPay — Via Gojek app"
+                  type="button"
+                >
+                  <div class="pay-method-logo pay-logo-gopay">GoPay</div>
+                  <div>
+                    <div class="pay-method-name">GoPay</div>
+                    <div class="pay-method-hint">Via Gojek app</div>
+                  </div>
+                  <div class="pay-check" aria-hidden="true">✓</div>
+                </button>
+
+                <button
+                  class="pay-method-card"
+                  :class="{ selected: paymentMethod === 'ovo' }"
+                  @click="paymentMethod = 'ovo'"
+                  role="radio"
+                  :aria-checked="paymentMethod === 'ovo'"
+                  aria-label="OVO — Bayar pakai OVO"
+                  type="button"
+                >
+                  <div class="pay-method-logo pay-logo-ovo">OVO</div>
+                  <div>
+                    <div class="pay-method-name">OVO</div>
+                    <div class="pay-method-hint">Bayar pakai OVO</div>
+                  </div>
+                  <div class="pay-check" aria-hidden="true">✓</div>
+                </button>
+
+                <button
+                  class="pay-method-card"
+                  :class="{ selected: paymentMethod === 'dana' }"
+                  @click="paymentMethod = 'dana'"
+                  role="radio"
+                  :aria-checked="paymentMethod === 'dana'"
+                  aria-label="DANA — Bayar pakai DANA"
+                  type="button"
+                >
+                  <div class="pay-method-logo pay-logo-dana">DANA</div>
+                  <div>
+                    <div class="pay-method-name">DANA</div>
+                    <div class="pay-method-hint">Bayar pakai DANA</div>
+                  </div>
+                  <div class="pay-check" aria-hidden="true">✓</div>
+                </button>
+
+                <button
+                  class="pay-method-card"
+                  :class="{ selected: paymentMethod === 'transfer' }"
+                  @click="paymentMethod = 'transfer'"
+                  role="radio"
+                  :aria-checked="paymentMethod === 'transfer'"
+                  aria-label="Transfer Bank — BCA / Mandiri / BNI"
+                  type="button"
+                  style="grid-column: span 2;"
+                >
+                  <div class="pay-method-logo pay-logo-transfer">🏦</div>
+                  <div>
+                    <div class="pay-method-name">Transfer Bank</div>
+                    <div class="pay-method-hint">BCA / Mandiri / BNI</div>
+                  </div>
+                  <div class="pay-check" aria-hidden="true">✓</div>
+                </button>
+
               </div>
 
               <div class="checkout-nav-row">
                 <button @click="prevStep()" class="btn-secondary" style="padding:14px 28px;">Back</button>
                 <button
                   @click="placeOrder()"
-                  :disabled="loading"
+                  :disabled="loading || !paymentMethod"
                   class="checkout-place-order-btn"
                   style="width:auto;padding:16px 48px;"
                 >
-                  <span x-show="!loading">Place Order</span>
+                  <span x-show="!loading" x-text="paymentMethod ? 'Place Order' : 'Pilih metode dulu'"></span>
                   <span x-show="loading" style="display:none;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;" aria-hidden="true"><path d="M12 2a10 10 0 0 1 0 20" stroke-linecap="round"/></svg>
                     Placing Order…
@@ -421,9 +481,7 @@
       postalCode: '',
       phone: '',
       errors: {},
-      cardNumber: '',
-      expiry: '',
-      cvv: '',
+      paymentMethod: null,
 
       // Step labels for indicator
       stepLabels: ['Shipping', 'Review', 'Payment', 'Confirmation'],
@@ -456,9 +514,10 @@
       },
 
       validatePayment() {
-        if (!this.cardNumber.trim()) { this.errorMsg = 'Please enter a card number.'; return false; }
-        if (!this.expiry.trim()) { this.errorMsg = 'Please enter the expiry date.'; return false; }
-        if (!this.cvv.trim()) { this.errorMsg = 'Please enter the CVV.'; return false; }
+        if (!this.paymentMethod) {
+          this.errorMsg = 'Pilih metode pembayaran terlebih dahulu.';
+          return false;
+        }
         this.errorMsg = '';
         return true;
       },

@@ -275,7 +275,7 @@
       <!-- Product grid — Supabase-backed -->
       <div class="shop-grid" x-show="!loading && products.length > 0" style="display:none;">
         <template x-for="(p, index) in products" :key="p.id">
-          <a :href="'/product.html?slug=' + p.slug" class="product-card">
+          <a :href="'/product?slug=' + p.slug" class="product-card">
             <div class="product-img">
               <img
                 :src="(p.activeImage || '') + '?w=800&q=80'"
@@ -382,7 +382,7 @@
         </div>
 
         <a
-          :href="sizePickerProduct ? '/product.html?slug=' + sizePickerProduct.slug : '#'"
+          :href="sizePickerProduct ? '/product?slug=' + sizePickerProduct.slug : '#'"
           style="display:block;text-align:center;margin-top:22px;font-size:12px;color:var(--text-muted);text-decoration:underline;letter-spacing:0.06em;"
         >View full details & size guide →</a>
       </div>

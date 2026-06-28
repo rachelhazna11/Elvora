@@ -374,7 +374,7 @@
                   <h3 x-text="item.name" class="product-name"></h3>
                   <span x-text="'$' + Number(item.base_price).toFixed(2)" class="product-price"></span>
                 </div>
-                <a :href="'/product.html?slug=' + item.slug" class="absolute inset-0 z-[1]" aria-label="View product"></a>
+                <a :href="'/product?slug=' + item.slug" class="absolute inset-0 z-[1]" aria-label="View product"></a>
               </div>
             </template>
           </div>

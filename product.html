@@ -485,7 +485,7 @@
       <h2 class="font-display text-2xl text-charcoal mb-8">Complete the Look</h2>
       <div class="look-grid">
         <template x-for="pair in pairings" :key="pair.id">
-          <a :href="'/product.html?slug=' + pair.slug" class="look-card">
+          <a :href="'/product?slug=' + pair.slug" class="look-card">
             <div style="aspect-ratio:3/4;overflow:hidden;">
               <img
                 :src="pair.image ? pair.image + '?w=600&q=80' : ''"
@@ -514,7 +514,7 @@
       <h2 class="font-display text-2xl text-charcoal mb-8">You Might Also Love</h2>
       <div class="related-grid">
         <template x-for="p in relatedProducts" :key="p.id">
-          <a :href="'/product.html?slug=' + p.slug" class="product-card">
+          <a :href="'/product?slug=' + p.slug" class="product-card">
             <div class="product-img">
               <img
                 :src="(p.product_images?.[0]?.url || '') + '?w=800&q=80'"
