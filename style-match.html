@@ -790,7 +790,7 @@
 
                     <div class="sm-outfit-products" x-show="outfit.products && outfit.products.length > 0">
                       <template x-for="product in outfit.products" :key="product.id">
-                        <a :href="'/product?slug=' + product.slug"
+                        <a :href="'/product.html?slug=' + product.slug"
                           class="sm-outfit-product-btn">
                           <span x-text="product.name"></span>
                           <span style="font-size:10px;opacity:0.7;" x-text="'Rp ' + (product.price ? product.price.toLocaleString('id-ID') : '–')"></span>
@@ -1163,14 +1163,10 @@
               throw new Error('Style Match module belum dimuat. Coba refresh halaman.');
             }
 
-            // Safety timeout — jika AI tidak respond dalam 45s, beri pesan error bukan loading terus
-            const matchTimeout = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Analisis membutuhkan waktu terlalu lama. Silakan coba lagi.')), 45_000)
+            const aiResult = await window.submitStyleMatch(
+              this.photoFile,
+              this.preferences
             );
-            const aiResult = await Promise.race([
-              window.submitStyleMatch(this.photoFile, this.preferences),
-              matchTimeout,
-            ]);
 
             // Enrich recommendations with full product data from Supabase
             const enriched = await this.enrichRecommendations(aiResult.recommendations ?? []);
