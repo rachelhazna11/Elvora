@@ -1163,10 +1163,14 @@
               throw new Error('Style Match module belum dimuat. Coba refresh halaman.');
             }
 
-            const aiResult = await window.submitStyleMatch(
-              this.photoFile,
-              this.preferences
+            // Safety timeout — jika AI tidak respond dalam 45s, beri pesan error bukan loading terus
+            const matchTimeout = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Analisis membutuhkan waktu terlalu lama. Silakan coba lagi.')), 45_000)
             );
+            const aiResult = await Promise.race([
+              window.submitStyleMatch(this.photoFile, this.preferences),
+              matchTimeout,
+            ]);
 
             // Enrich recommendations with full product data from Supabase
             const enriched = await this.enrichRecommendations(aiResult.recommendations ?? []);

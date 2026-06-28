@@ -4,10 +4,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers — origin locked to known domains per D-09/D-15
-// Wildcard (*) is explicitly prohibited by T-05-02 (threat model)
 const ALLOWED_ORIGINS = [
-  "https://elvorastudio.vercel.app",    // production — update if Vercel URL differs
+  "https://elvorastudio.vercel.app",    // production (legacy)
+  "https://elvora.vercel.app",          // production (current Vercel project name)
   "http://localhost:3999",              // local dev
+  "http://localhost:5173",              // Vite dev server
+  "http://127.0.0.1:3999",             // local dev alt
 ];
 
 function getCorsHeaders(requestOrigin: string | null): Record<string, string> {
@@ -178,12 +180,21 @@ If you cannot determine appropriate styles, default to the best-seller items: c2
       // If signed URL, fetch and convert to base64 data URI for inline delivery
       if (body.photo_url.startsWith("https://")) {
         try {
-          const imgResponse = await fetch(body.photo_url);
+          const controller = new AbortController();
+          const fetchTimeout = setTimeout(() => controller.abort(), 10_000);
+          const imgResponse = await fetch(body.photo_url, { signal: controller.signal });
+          clearTimeout(fetchTimeout);
           if (imgResponse.ok) {
             const imgBuffer = await imgResponse.arrayBuffer();
             const contentType = imgResponse.headers.get("content-type") ?? "image/jpeg";
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(imgBuffer)));
-            photoUrl = `data:${contentType.split(";")[0]};base64,${base64}`;
+            // Chunked base64 — avoids call-stack overflow from spread on large arrays
+            const bytes = new Uint8Array(imgBuffer);
+            let binary = "";
+            const CHUNK = 8192;
+            for (let i = 0; i < bytes.length; i += CHUNK) {
+              binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+            }
+            photoUrl = `data:${contentType.split(";")[0]};base64,${btoa(binary)}`;
           } else {
             console.warn("Failed to fetch photo from signed URL:", imgResponse.status);
             photoUrl = "";
@@ -214,6 +225,8 @@ If you cannot determine appropriate styles, default to the best-seller items: c2
       temperature: 0.7,
     };
 
+    const nvidiaController = new AbortController();
+    const nvidiaTimeout = setTimeout(() => nvidiaController.abort(), 30_000);
     const nvidiaResponse = await fetch(
       "https://integrate.api.nvidia.com/v1/chat/completions",
       {
@@ -223,14 +236,16 @@ If you cannot determine appropriate styles, default to the best-seller items: c2
           "Authorization": `Bearer ${NVIDIA_API_KEY}`,
         },
         body: JSON.stringify(nvidiaPayload),
+        signal: nvidiaController.signal,
       }
     );
+    clearTimeout(nvidiaTimeout);
 
     if (!nvidiaResponse.ok) {
       const errText = await nvidiaResponse.text();
       console.error("NVIDIA NIM error:", nvidiaResponse.status, errText);
       return new Response(
-        JSON.stringify({ error: "AI service temporarily unavailable" }),
+        JSON.stringify({ error: "AI service temporarily unavailable", detail: `${nvidiaResponse.status}` }),
         {
           status: 502,
           headers: { ...CORS_HEADERS, "Content-Type": "application/json" },

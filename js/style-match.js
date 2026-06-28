@@ -96,10 +96,10 @@ async function uploadPhotoToStorage(userId, base64DataUri) {
     throw new Error(`Photo upload failed: ${uploadError.message}`);
   }
 
-  // Generate a 60-second signed URL for the uploaded photo
+  // Generate a 5-minute signed URL for the uploaded photo (60s was too tight under load)
   const { data: signedData, error: signErr } = await supabase.storage
     .from('user-uploads')
-    .createSignedUrl(storagePath, 60);
+    .createSignedUrl(storagePath, 300);
 
   if (signErr || !signedData?.signedUrl) {
     throw new Error(`Failed to generate signed URL: ${signErr?.message ?? 'unknown error'}`);
