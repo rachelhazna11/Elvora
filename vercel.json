@@ -8,6 +8,10 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/product",
+      "dest": "/product.html"
+    },
+    {
       "handle": "filesystem"
     },
     {
